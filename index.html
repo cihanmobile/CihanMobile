@@ -353,14 +353,15 @@
 
   /* ---------- Cart drawer ---------- */
   .drawer{
-    position:fixed; top:0; right:0; height:100%; width:400px; max-width:92vw;
+    position:fixed; top:0; right:10px; height:100%; width:400px; max-width:87vw;
     background:var(--panel); border-left:1px solid var(--line);
-    transform:translateX(100%);
+    transform:translateX(calc(100% + 10px));
     transition:transform .3s ease;
     z-index:95;
     padding:22px 26px 26px;
     display:flex; flex-direction:column;
     overflow-y:auto;
+    box-sizing:border-box;
   }
   .drawer.open{transform:translateX(0);}
   .cart-items{flex:1; margin-top:8px;}
