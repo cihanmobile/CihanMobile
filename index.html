@@ -1074,7 +1074,7 @@
         </button>
         <button class="icon-btn" id="cartBtn" aria-label="Sepet">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M6 6L4 3H2"/></svg>
-          <span class="badge" id="cartBadge">2</span>
+          <span class="badge" id="cartBadge">0</span>
         </button>
         <button class="menu-toggle" id="menuToggle" aria-label="Menü" aria-expanded="false">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -1205,7 +1205,17 @@
     </div>
     <div style="overflow-y:auto; flex:1;">
       <div class="tab-panel active" style="margin-bottom:22px;">
-        <div><label>Kategori</label><input type="text" id="apCat" placeholder="Örn: Akıllı Telefon"></div>
+        <div><label>Kategori</label>
+          <select id="apCat">
+            <option value="">Kategori seç</option>
+            <option value="Akıllı Telefon">Akıllı Telefon</option>
+            <option value="Kulaklık">Kulaklık</option>
+            <option value="Powerbank">Powerbank</option>
+            <option value="Şarj Aletleri">Şarj Aletleri</option>
+            <option value="Kılıf & Aksesuar">Kılıf & Aksesuar</option>
+            <option value="Ek Kablolar">Ek Kablolar</option>
+          </select>
+        </div>
         <div><label>Ürün Adı</label><input type="text" id="apName" placeholder="Örn: Orbit S9"></div>
         <div><label>Fiyat (₺)</label><input type="number" id="apPrice" placeholder="Örn: 9990"></div>
         <div>
@@ -1968,10 +1978,7 @@
 
     // ---- Sepet ----
     const FREE_SHIPPING_LIMIT = 750;
-    let cartItems = [
-      { id: 1, name: 'Şeffaf Silikon Kılıf', variant: 'Nova X12 uyumlu', price: 149, qty: 1 },
-      { id: 2, name: 'USB-C Hızlı Şarj Kablosu', variant: '1 metre', price: 89, qty: 2 }
-    ];
+    let cartItems = [];
 
     function formatTL(n){ return n.toLocaleString('tr-TR') + '₺'; }
 
