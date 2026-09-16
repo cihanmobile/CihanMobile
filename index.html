@@ -2241,7 +2241,7 @@
     renderCart();
 
     // ---- Yönetim girişi & panel ----
-    const ADMIN_EMAIL = 'cihanmobile@gmail.com';
+    const ADMIN_EMAIL = 'Ahmetcihankaya411@gmail.com';
     const adminLoginLink = document.getElementById('adminLoginLink');
     const adminLoginError = document.getElementById('adminLoginError');
     let adminTopupSubscribed = false;
@@ -2265,7 +2265,7 @@
       setButtonBusy(btn, true, 'Giriş yapılıyor...', 'Giriş Yap');
       auth.signInWithEmailAndPassword(email, pass).then(cred => {
         setButtonBusy(btn, false, 'Giriş yapılıyor...', 'Giriş Yap');
-        if (cred.user.email !== ADMIN_EMAIL){
+        if (cred.user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()){
           auth.signOut();
           adminLoginError.textContent = 'Bu hesabın yönetim yetkisi yok.';
           adminLoginError.style.display = 'block';
