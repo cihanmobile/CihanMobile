@@ -1049,7 +1049,7 @@
 
   <header>
     <div class="wrap nav-row">
-      <a href="#" class="brand">Cihan Mobile Group</a>
+      <a href="#" class="brand" style="margin-left:14px;">Cihan Mobile Group</a>
 
       <nav class="main-nav">
         <a href="#hakkimizda">Hakkımızda</a>
@@ -1217,6 +1217,7 @@
           </select>
         </div>
         <div><label>Ürün Adı</label><input type="text" id="apName" placeholder="Örn: Orbit S9"></div>
+        <div><label>Ürün Açıklaması</label><textarea id="apDesc" rows="3" placeholder="Ürün hakkında kısa bir açıklama yaz..." style="width:100%; background:var(--bg); border:1px solid var(--line); border-radius:4px; padding:11px 13px; color:var(--text); font-size:13.5px; font-family:inherit; resize:vertical;"></textarea></div>
         <div><label>Fiyat (₺)</label><input type="number" id="apPrice" placeholder="Örn: 9990"></div>
         <div>
           <label>Etiket</label>
@@ -1348,6 +1349,56 @@
     </div>
   </section>
 
+  <section id="urunler" style="padding-top:56px;">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="htext"><span class="kicker">SEÇKİ</span><h2 id="urunlerBaslik">Öne Çıkan Ürünler</h2></div>
+        <a href="#urunler" id="resetCatFilter" style="display:none;">Tüm ürünler</a>
+      </div>
+
+      <div class="prod-grid">
+        <div class="prod-card" data-static-id="p1">
+          <div class="prod-thumb"><span class="tag tag-featured">Öne Çıkan</span><div class="mini-phone"></div></div>
+          <div class="prod-info">
+            <span class="prod-cat">Akıllı Telefon</span>
+            <span class="prod-name">Orbit S8 Lite</span>
+            <div class="prod-rating">★★★★☆ <span>(98)</span></div>
+            <div class="prod-bottom">
+              <span class="price">9.450₺</span>
+              <button class="add-btn">Sepete Ekle</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="prod-card" data-static-id="p2">
+          <div class="prod-thumb"><span class="tag tag-new">Yeni</span><div class="mini-phone"></div></div>
+          <div class="prod-info">
+            <span class="prod-cat">Kulaklık</span>
+            <span class="prod-name">Pulse Buds Pro</span>
+            <div class="prod-rating">★★★★★ <span>(340)</span></div>
+            <div class="prod-bottom">
+              <span class="price">1.290₺</span>
+              <button class="add-btn">Sepete Ekle</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="prod-card" data-static-id="p3">
+          <div class="prod-thumb"><span class="tag tag-discount">%25 İndirim</span><div class="mini-phone"></div></div>
+          <div class="prod-info">
+            <span class="prod-cat">Powerbank</span>
+            <span class="prod-name">Volt 20.000mAh</span>
+            <div class="prod-rating">★★★★☆ <span>(76)</span></div>
+            <div class="prod-bottom">
+              <span class="price"><span class="old">1.190₺</span>890₺</span>
+              <button class="add-btn">Sepete Ekle</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <div class="trust-bar">
     <div class="wrap trust-grid">
       <div class="trust-item">
@@ -1464,56 +1515,6 @@
           <span>Ek Kablolar</span>
           <small>Hesaplanıyor...</small>
         </a>
-      </div>
-    </div>
-  </section>
-
-  <section id="urunler" style="padding-top:0;">
-    <div class="wrap">
-      <div class="section-head">
-        <div class="htext"><span class="kicker">SEÇKİ</span><h2 id="urunlerBaslik">Çok satanlar</h2></div>
-        <a href="#urunler" id="resetCatFilter" style="display:none;">Tüm ürünler</a>
-      </div>
-
-      <div class="prod-grid">
-        <div class="prod-card" data-static-id="p1">
-          <div class="prod-thumb"><span class="tag tag-featured">Öne Çıkan</span><div class="mini-phone"></div></div>
-          <div class="prod-info">
-            <span class="prod-cat">Akıllı Telefon</span>
-            <span class="prod-name">Orbit S8 Lite</span>
-            <div class="prod-rating">★★★★☆ <span>(98)</span></div>
-            <div class="prod-bottom">
-              <span class="price">9.450₺</span>
-              <button class="add-btn">Sepete Ekle</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="prod-card" data-static-id="p2">
-          <div class="prod-thumb"><span class="tag tag-new">Yeni</span><div class="mini-phone"></div></div>
-          <div class="prod-info">
-            <span class="prod-cat">Kulaklık</span>
-            <span class="prod-name">Pulse Buds Pro</span>
-            <div class="prod-rating">★★★★★ <span>(340)</span></div>
-            <div class="prod-bottom">
-              <span class="price">1.290₺</span>
-              <button class="add-btn">Sepete Ekle</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="prod-card" data-static-id="p3">
-          <div class="prod-thumb"><span class="tag tag-discount">%25 İndirim</span><div class="mini-phone"></div></div>
-          <div class="prod-info">
-            <span class="prod-cat">Powerbank</span>
-            <span class="prod-name">Volt 20.000mAh</span>
-            <div class="prod-rating">★★★★☆ <span>(76)</span></div>
-            <div class="prod-bottom">
-              <span class="price"><span class="old">1.190₺</span>890₺</span>
-              <button class="add-btn">Sepete Ekle</button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -2117,7 +2118,8 @@
       document.getElementById('pmName').textContent = info.name;
       document.getElementById('pmRating').innerHTML = ratingEl ? ratingEl.innerHTML : '';
       document.getElementById('pmPrice').innerHTML = priceEl ? priceEl.outerHTML : formatTL(info.price);
-      document.getElementById('pmDesc').textContent = genDescription(info.name, info.cat);
+      const customDesc = (card.dataset.desc || '').trim();
+      document.getElementById('pmDesc').textContent = customDesc || genDescription(info.name, info.cat);
 
       productModal.dataset.id = info.id;
       productModal.dataset.name = info.name;
@@ -2422,6 +2424,7 @@
       const card = document.createElement('div');
       card.className = 'prod-card';
       card.dataset.adminId = p.id;
+      card.dataset.desc = p.desc || '';
       const images = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
       card.dataset.images = JSON.stringify(images);
       card.dataset.imgIndex = '0';
@@ -2499,7 +2502,7 @@
 
     // ---- imgbb ile çoklu fotoğraf yükleme (en fazla 10) ----
     // Ücretsiz bir API anahtarı al: https://api.imgbb.com/  (Buradaki anahtarı kendi anahtarınla değiştir)
-    const IMGBB_API_KEY = 'BURAYA_KENDI_IMGBB_API_ANAHTARINI_YAZ';
+    const IMGBB_API_KEY = '9183220b3ee948f4b3a09bbddbd7ee92';
 
     const apImageInput = document.getElementById('apImage');
     const apImagePreviewWrap = document.getElementById('apImagePreviewWrap');
@@ -2549,6 +2552,7 @@
     apAddBtn.addEventListener('click', () => {
       const cat = document.getElementById('apCat').value.trim();
       const name = document.getElementById('apName').value.trim();
+      const desc = document.getElementById('apDesc').value.trim();
       const price = Number(document.getElementById('apPrice').value);
       const badgeType = apBadgeTypeSelect.value;
       const discountPercent = badgeType === 'discount' ? Number(document.getElementById('apDiscountPercent').value) : null;
@@ -2572,7 +2576,7 @@
       }
 
       function finishAdd(imageUrls){
-        const product = { id: Date.now(), cat, name, price, badgeType, discountPercent, customTag, images: imageUrls || [] };
+        const product = { id: Date.now(), cat, name, desc, price, badgeType, discountPercent, customTag, images: imageUrls || [] };
         const list = loadAdminProducts();
         list.push(product);
         saveAdminProducts(list);
@@ -2580,6 +2584,7 @@
         renderAdminAddedList();
         document.getElementById('apCat').value = '';
         document.getElementById('apName').value = '';
+        document.getElementById('apDesc').value = '';
         document.getElementById('apPrice').value = '';
         apBadgeTypeSelect.value = '';
         document.getElementById('apDiscountPercent').value = '';
