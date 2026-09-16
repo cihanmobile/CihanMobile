@@ -966,8 +966,12 @@
     .util-right{display:none;}
     nav.main-nav, .search-box{display:none;}
     .menu-toggle{display:flex;}
-    .nav-row{padding:15px 0;}
-    .brand{font-size:19px;}
+    .nav-row{padding:15px 0; gap:10px;}
+    .brand{font-size:17px; flex-shrink:1; min-width:0; overflow:hidden; text-overflow:ellipsis; margin-left:6px !important;}
+    .nav-actions{gap:7px;}
+    .balance-pill{padding:0 9px; font-size:12px; height:34px;}
+    .balance-pill .b-label{display:none;}
+    .icon-btn, .menu-toggle{width:34px; height:34px;}
     .shipping-strip{font-size:12.5px; padding:9px 12px;}
 
     .hero{padding:40px 0 44px;}
