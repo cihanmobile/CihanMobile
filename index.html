@@ -315,8 +315,41 @@
     padding:11px 13px; color:var(--text); font-size:13.5px; font-family:inherit;
   }
   .tab-panel input:focus{outline:none; border-color:var(--gold);}
+  .tab-panel select{
+    width:100%;
+    background:var(--bg); border:1px solid var(--line); border-radius:4px;
+    padding:11px 13px; color:var(--text); font-size:13.5px; font-family:inherit;
+  }
+  .tab-panel select:focus{outline:none; border-color:var(--gold);}
   .tab-panel .btn{width:100%; text-align:center; margin-top:6px; border:none;}
   .modal-note{font-size:12px; color:var(--muted-2); text-align:center; margin-top:14px;}
+
+  /* ---------- Ürün detay modalı ---------- */
+  .modal-wide{width:560px; max-height:86vh; overflow-y:auto;}
+  .product-modal-body{display:flex; flex-direction:column; gap:20px;}
+  .product-modal-img{
+    width:100%; height:230px; border-radius:var(--radius);
+    background:linear-gradient(150deg,#171C25,#0F1319);
+    border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .product-modal-img img{width:100%; height:100%; object-fit:cover;}
+  .product-modal-img .mini-phone{width:64px; aspect-ratio:9/18.5; background:linear-gradient(160deg,#262E3B,#141821); border-radius:10px; border:1px solid #333c4a;}
+  #pmName{font-family:'Source Serif 4',serif; font-size:20px; font-weight:600;}
+  .product-modal-actions{display:flex; flex-direction:column; gap:10px; margin-top:6px;}
+  .product-modal-actions .btn{width:100%; text-align:center; margin-top:0;}
+  #pmContactBtn{border-color:#25D366; color:#25D366;}
+  #pmContactBtn:hover{background:rgba(37,211,102,0.1);}
+
+  /* ---------- Bildirim (toast) ---------- */
+  .toast{
+    position:fixed; left:50%; bottom:28px; transform:translate(-50%,16px);
+    background:var(--panel-2); border:1px solid var(--gold); color:var(--text);
+    padding:12px 20px; border-radius:var(--radius); font-size:13px; font-weight:500;
+    z-index:120; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1; transform:translate(-50%,0);}
 
   /* ---------- Cart drawer ---------- */
   .drawer{
@@ -567,6 +600,7 @@
     background:var(--panel);
     display:flex;
     flex-direction:column;
+    cursor:pointer;
   }
   .prod-thumb{
     height:160px;
@@ -584,6 +618,31 @@
     border-radius:10px;
     border:1px solid #333c4a;
   }
+  .prod-thumb img{width:100%; height:100%; object-fit:cover;}
+  .ap-img-preview-wrap{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+  .ap-img-preview-wrap img{
+    width:64px; height:64px; object-fit:cover; border-radius:6px; border:1px solid var(--line);
+  }
+  .ap-upload-note{font-size:11.5px; color:var(--muted-2); margin-top:5px;}
+
+  /* ---------- Ürün kartı foto galerisi ---------- */
+  .gallery-arrow{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:26px; height:26px; border-radius:50%;
+    background:rgba(10,12,16,0.65); border:1px solid rgba(255,255,255,0.25);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:13px; z-index:2; user-select:none;
+  }
+  .gallery-arrow.prev{left:8px;}
+  .gallery-arrow.next{right:8px;}
+  .gallery-dots{
+    position:absolute; bottom:8px; left:0; right:0;
+    display:flex; justify-content:center; gap:5px; z-index:2;
+  }
+  .gallery-dots span{
+    width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.4);
+  }
+  .gallery-dots span.active{background:var(--gold);}
   .tag{
     position:absolute;
     top:12px;left:12px;
@@ -594,6 +653,10 @@
     padding:3px 8px;
     border-radius:3px;
   }
+  .tag.tag-featured{background:var(--gold); color:#1B1405;}
+  .tag.tag-discount{background:#E0736B; color:#2B0D0A;}
+  .tag.tag-new{background:var(--navy); color:#EAF0FF;}
+  .tag.tag-custom{background:var(--panel-2); color:var(--text); border:1px solid var(--line);}
   .prod-info{padding:18px; display:flex; flex-direction:column; gap:7px; flex:1;}
   .prod-cat{color:var(--muted); font-size:11.5px; font-weight:500;}
   .prod-name{font-size:14.5px; font-weight:600;}
@@ -1044,6 +1107,7 @@
   </nav>
 
   <div class="overlay" id="overlay"></div>
+  <div class="toast" id="toast"></div>
 
   <!-- Üyelik modalı -->
   <div class="modal" id="accountModal">
@@ -1086,6 +1150,7 @@
     </div>
 
     <p class="modal-note" id="accountModalNote">Hesabın Firebase Authentication ile güvenli şekilde oluşturulur ve saklanır.</p>
+    <p class="modal-note" style="margin-top:10px;"><a href="#" id="adminLoginLink" style="text-decoration:underline; color:var(--muted-2);">Yönetim Paneli</a></p>
   </div>
 
   <!-- Bakiye yükleme modalı -->
@@ -1143,7 +1208,30 @@
         <div><label>Kategori</label><input type="text" id="apCat" placeholder="Örn: Akıllı Telefon"></div>
         <div><label>Ürün Adı</label><input type="text" id="apName" placeholder="Örn: Orbit S9"></div>
         <div><label>Fiyat (₺)</label><input type="number" id="apPrice" placeholder="Örn: 9990"></div>
-        <div><label>Etiket (opsiyonel)</label><input type="text" id="apTag" placeholder="Örn: Yeni"></div>
+        <div>
+          <label>Etiket</label>
+          <select id="apBadgeType">
+            <option value="">Etiket yok</option>
+            <option value="featured">Öne Çıkan Ürün</option>
+            <option value="discount">İndirimli Ürün (%)</option>
+            <option value="new">Yeni Ürün</option>
+            <option value="custom">Özel metin</option>
+          </select>
+        </div>
+        <div id="apDiscountWrap" style="display:none;">
+          <label>İndirim Oranı (%)</label>
+          <input type="number" id="apDiscountPercent" min="1" max="90" placeholder="Örn: 25">
+        </div>
+        <div id="apCustomTagWrap" style="display:none;">
+          <label>Özel Etiket Metni</label>
+          <input type="text" id="apCustomTag" placeholder="Örn: Son 3 Adet">
+        </div>
+        <div>
+          <label>Ürün Fotoğrafları (en fazla 10, opsiyonel)</label>
+          <input type="file" id="apImage" accept="image/*" multiple>
+          <div id="apImagePreviewWrap" class="ap-img-preview-wrap"></div>
+          <p class="ap-upload-note" id="apUploadNote">Fotoğraf seçersen ürün eklerken otomatik olarak imgbb'ye yüklenir. En fazla 10 foto seçebilirsin.</p>
+        </div>
         <button class="btn btn-primary" type="button" id="apAddBtn">Ürünü Ekle</button>
       </div>
       <div style="border-top:1px solid var(--line); padding-top:16px;">
@@ -1151,11 +1239,15 @@
         <div id="apAddedList"></div>
       </div>
       <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:22px;">
+        <p style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">Sitede zaten var olan ilanlar</p>
+        <div id="apExistingList"></div>
+      </div>
+      <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:22px;">
         <p style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">Bakiye yükleme talepleri</p>
         <div id="apTopupList"></div>
       </div>
     </div>
-    <p class="modal-note">Not: Eklenen ilanlar ve bakiye talepleri yalnızca bu tarayıcıda (yerel depolama) saklanır; gerçek bir sunucu/veritabanına bağlı değildir.</p>
+    <p class="modal-note">Not: Eklenen/silinen ilanlar ve bakiye talepleri yalnızca bu tarayıcıda (yerel depolama) saklanır; gerçek bir sunucu/veritabanına bağlı değildir.</p>
   </div>
 
   <!-- Sepet çekmecesi -->
@@ -1172,7 +1264,36 @@
       </div>
       <div class="cart-summary">
         <div class="cart-summary-row"><span>Ara toplam</span><strong id="cartSubtotal">0₺</strong></div>
-        <button class="btn btn-primary" type="button" id="checkoutBtn" style="width:100%; text-align:center; border:none;">Ödemeye Geç</button>
+        <div class="cart-summary-row" id="cartBalanceRow" style="display:none;"><span>Bakiyen</span><strong id="cartBalanceAmount">0₺</strong></div>
+        <div style="margin-bottom:14px;">
+          <label for="checkoutAddress" style="font-size:12.5px; color:var(--muted); margin-bottom:5px; display:block;">Teslimat Adresi</label>
+          <textarea id="checkoutAddress" rows="3" placeholder="Ad soyad, telefon, açık adres (mahalle, cadde/sokak, il/ilçe, posta kodu)" style="width:100%; background:var(--bg); border:1px solid var(--line); border-radius:4px; padding:11px 13px; color:var(--text); font-size:13.5px; font-family:inherit; resize:vertical;"></textarea>
+        </div>
+        <p class="modal-note" id="checkoutMessage" style="display:none; margin-top:0; margin-bottom:10px;"></p>
+        <button class="btn btn-primary" type="button" id="checkoutBtn" style="width:100%; text-align:center; border:none;">Bakiye ile Öde</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ürün detay modalı -->
+  <div class="modal modal-wide" id="productModal">
+    <div class="panel-head">
+      <span>Ürün Detayı</span>
+      <button class="panel-close" data-close aria-label="Kapat">✕</button>
+    </div>
+    <div class="product-modal-body">
+      <div class="product-modal-img" id="pmImage"><div class="mini-phone"></div></div>
+      <div class="product-modal-info">
+        <span class="prod-cat" id="pmCat"></span>
+        <h3 id="pmName"></h3>
+        <div class="prod-rating" id="pmRating"></div>
+        <div id="pmPrice" style="margin:10px 0;"></div>
+        <p id="pmDesc" style="font-size:13px; color:var(--muted); line-height:1.65;"></p>
+        <div class="product-modal-actions">
+          <button type="button" class="btn btn-ghost" id="pmAddBtn">Sepete Ekle</button>
+          <button type="button" class="btn btn-primary" id="pmBuyBtn" style="border:none;">Satın Al</button>
+          <button type="button" class="btn btn-ghost" id="pmContactBtn">İletişime Geç</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1196,532 +1317,6 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
-  </script>
-  <script>
-    // ---- Ortak panel yönetimi ----
-    const overlay = document.getElementById('overlay');
-    const menuToggle = document.getElementById('menuToggle');
-    const mobileNavPanel = document.getElementById('mobileNavPanel');
-    const accountBtn = document.getElementById('accountBtn');
-    const accountModal = document.getElementById('accountModal');
-    const cartBtn = document.getElementById('cartBtn');
-    const cartDrawer = document.getElementById('cartDrawer');
-    const adminLoginModal = document.getElementById('adminLoginModal');
-    const adminPanel = document.getElementById('adminPanel');
-    const topupModal = document.getElementById('topupModal');
-    const allPanels = [mobileNavPanel, accountModal, cartDrawer, adminLoginModal, adminPanel, topupModal];
-
-    function closeAllPanels(){
-      allPanels.forEach(p => p.classList.remove('open'));
-      overlay.classList.remove('show');
-      menuToggle.setAttribute('aria-expanded', 'false');
-    }
-    function openPanel(panel){
-      allPanels.forEach(p => p !== panel && p.classList.remove('open'));
-      panel.classList.add('open');
-      overlay.classList.add('show');
-    }
-
-    menuToggle.addEventListener('click', () => {
-      const willOpen = !mobileNavPanel.classList.contains('open');
-      if (willOpen){ openPanel(mobileNavPanel); menuToggle.setAttribute('aria-expanded','true'); }
-      else { closeAllPanels(); }
-    });
-    accountBtn.addEventListener('click', () => openPanel(accountModal));
-    cartBtn.addEventListener('click', () => { renderCart(); openPanel(cartDrawer); });
-    document.getElementById('balancePill').addEventListener('click', () => openPanel(topupModal));
-    document.getElementById('openTopupBtn').addEventListener('click', () => openPanel(topupModal));
-
-    overlay.addEventListener('click', closeAllPanels);
-    document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', closeAllPanels));
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllPanels(); });
-    mobileNavPanel.querySelectorAll('a').forEach(link => link.addEventListener('click', closeAllPanels));
-
-    // ---- Üyelik sekmeleri ----
-    document.querySelectorAll('.tab-btn').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        tab.classList.add('active');
-        document.querySelector('.tab-panel[data-panel="' + tab.dataset.tab + '"]').classList.add('active');
-      });
-    });
-    // ---- Gerçek kayıt / giriş sistemi (Firebase Authentication) ----
-    function firebaseErrorMessage(code){
-      switch(code){
-        case 'auth/email-already-in-use': return 'Bu e-posta adresiyle zaten bir hesap var. Giriş yapmayı dener misin?';
-        case 'auth/invalid-email': return 'Lütfen geçerli bir e-posta adresi gir.';
-        case 'auth/weak-password': return 'Şifre en az 6 karakter olmalı.';
-        case 'auth/missing-password': return 'Lütfen bir şifre gir.';
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-        case 'auth/invalid-credential':
-          return 'E-posta veya şifre hatalı.';
-        case 'auth/too-many-requests':
-          return 'Çok fazla başarısız deneme oldu. Lütfen biraz sonra tekrar dene.';
-        case 'auth/network-request-failed':
-          return 'Bağlantı hatası. İnternet bağlantını kontrol et.';
-        case 'auth/operation-not-allowed':
-          return 'E-posta/Şifre girişi Firebase Console\'da henüz açılmamış (Authentication > Sign-in method).';
-        case 'auth/unauthorized-domain':
-          return 'Bu site adresi Firebase\'de yetkili domain listesinde değil (Authentication > Settings > Authorized domains).';
-        case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
-        case 'auth/invalid-api-key':
-          return 'Firebase API anahtarı geçersiz veya kısıtlanmış.';
-        default:
-          return 'Bir şeyler ters gitti (' + (code || 'bilinmeyen hata') + '). Lütfen tekrar dene.';
-      }
-    }
-    function setFieldError(id, msg){
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.textContent = msg || '';
-      el.style.display = msg ? 'block' : 'none';
-    }
-    function setButtonBusy(btn, busy, busyText, idleText){
-      btn.disabled = busy;
-      btn.textContent = busy ? busyText : idleText;
-      btn.style.opacity = busy ? '0.7' : '1';
-    }
-
-    const loginSubmitBtn = document.getElementById('loginSubmit');
-    const registerSubmitBtn = document.getElementById('registerSubmit');
-
-    loginSubmitBtn.addEventListener('click', () => {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      setFieldError('loginError', '');
-      setFieldError('loginResetNote', '');
-      if (!email || !password){
-        setFieldError('loginError', 'Lütfen e-posta ve şifreni gir.');
-        return;
-      }
-      setButtonBusy(loginSubmitBtn, true, 'Giriş yapılıyor...', 'Giriş Yap');
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          document.getElementById('loginEmail').value = '';
-          document.getElementById('loginPassword').value = '';
-          closeAllPanels();
-        })
-        .catch(err => { console.error('Firebase login error:', err); setFieldError('loginError', firebaseErrorMessage(err.code)); })
-        .finally(() => setButtonBusy(loginSubmitBtn, false, 'Giriş yapılıyor...', 'Giriş Yap'));
-    });
-
-    registerSubmitBtn.addEventListener('click', () => {
-      const name = document.getElementById('registerName').value.trim();
-      const email = document.getElementById('registerEmail').value.trim();
-      const password = document.getElementById('registerPassword').value;
-      setFieldError('registerError', '');
-      if (!name || !email || !password){
-        setFieldError('registerError', 'Lütfen tüm alanları doldur.');
-        return;
-      }
-      if (password.length < 6){
-        setFieldError('registerError', 'Şifre en az 6 karakter olmalı.');
-        return;
-      }
-      setButtonBusy(registerSubmitBtn, true, 'Hesap oluşturuluyor...', 'Üye Ol');
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(cred => cred.user.updateProfile({ displayName: name }))
-        .then(() => {
-          document.getElementById('registerName').value = '';
-          document.getElementById('registerEmail').value = '';
-          document.getElementById('registerPassword').value = '';
-          closeAllPanels();
-        })
-        .catch(err => { console.error('Firebase register error:', err); setFieldError('registerError', firebaseErrorMessage(err.code)); })
-        .finally(() => setButtonBusy(registerSubmitBtn, false, 'Hesap oluşturuluyor...', 'Üye Ol'));
-    });
-
-    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      setFieldError('loginError', '');
-      setFieldError('loginResetNote', '');
-      if (!email){
-        setFieldError('loginError', 'Şifre sıfırlama bağlantısı göndermek için önce e-posta adresini gir.');
-        return;
-      }
-      auth.sendPasswordResetEmail(email)
-        .then(() => setFieldError('loginResetNote', 'Şifre sıfırlama bağlantısı e-postana gönderildi.'))
-        .catch(err => { console.error('Firebase login error:', err); setFieldError('loginError', firebaseErrorMessage(err.code)); });
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      auth.signOut();
-      closeAllPanels();
-    });
-
-    let currentUser = null;
-    let unsubscribeBalance = null;
-
-    auth.onAuthStateChanged(user => {
-      currentUser = user;
-      const loggedOutView = document.getElementById('accountLoggedOut');
-      const loggedInView = document.getElementById('accountLoggedIn');
-      if (user){
-        loggedOutView.style.display = 'none';
-        loggedInView.style.display = 'block';
-        document.getElementById('accountUserName').textContent = user.displayName || 'Üye';
-        document.getElementById('accountUserEmail').textContent = user.email || '';
-        accountBtn.classList.add('logged-in');
-        subscribeUserBalance(user.uid);
-      } else {
-        loggedOutView.style.display = 'block';
-        loggedInView.style.display = 'none';
-        accountBtn.classList.remove('logged-in');
-        if (unsubscribeBalance){ unsubscribeBalance(); unsubscribeBalance = null; }
-        updateBalanceUI(0);
-      }
-    });
-
-    // ---- Bakiye yükleme sistemi (Firestore — çok kullanıcılı, gerçek zamanlı) ----
-    const BANK_IBAN = 'TR55 0015 7000 0000 0202 8357 31';
-
-    function subscribeUserBalance(uid){
-      if (unsubscribeBalance){ unsubscribeBalance(); }
-      unsubscribeBalance = db.collection('balances').doc(uid).onSnapshot(snap => {
-        const amount = snap.exists ? (snap.data().amount || 0) : 0;
-        updateBalanceUI(amount);
-      }, () => updateBalanceUI(0));
-    }
-
-    function updateBalanceUI(amount){
-      const pill = document.getElementById('balancePill');
-      const amountText = document.getElementById('balanceAmountText');
-      const accBalanceEl = document.getElementById('accountBalanceAmount');
-      if (currentUser){
-        pill.classList.add('show');
-        amountText.textContent = formatTL(amount);
-        if (accBalanceEl) accBalanceEl.textContent = formatTL(amount);
-      } else {
-        pill.classList.remove('show');
-      }
-    }
-
-    document.getElementById('copyIbanBtn').addEventListener('click', () => {
-      const btn = document.getElementById('copyIbanBtn');
-      const finish = (ok) => {
-        const old = 'IBAN\'ı Kopyala';
-        btn.textContent = ok ? 'Kopyalandı ✓' : 'Kopyalanamadı';
-        setTimeout(() => btn.textContent = old, 1800);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(BANK_IBAN).then(() => finish(true)).catch(() => finish(false));
-      } else {
-        finish(false);
-      }
-    });
-
-    const topupSubmitBtn = document.getElementById('topupSubmitBtn');
-    topupSubmitBtn.addEventListener('click', () => {
-      setFieldError('topupError', '');
-      setFieldError('topupSuccess', '');
-      if (!currentUser){
-        setFieldError('topupError', 'Talep gönderebilmek için önce giriş yapmalısın.');
-        return;
-      }
-      const amountInput = document.getElementById('topupAmount');
-      const amount = Number(amountInput.value);
-      if (!amount || amount <= 0){
-        setFieldError('topupError', 'Lütfen geçerli bir tutar gir.');
-        return;
-      }
-      setButtonBusy(topupSubmitBtn, true, 'Gönderiliyor...', 'Talebi Gönder');
-      db.collection('topupRequests').add({
-        uid: currentUser.uid,
-        name: currentUser.displayName || 'Üye',
-        email: currentUser.email || '',
-        amount: amount,
-        status: 'pending',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        amountInput.value = '';
-        setFieldError('topupSuccess', 'Talebin alındı. Yönetim onayladığında bakiyene yansıyacak.');
-      }).catch(() => {
-        setFieldError('topupError', 'Talep gönderilemedi, lütfen tekrar dene.');
-      }).finally(() => {
-        setButtonBusy(topupSubmitBtn, false, 'Gönderiliyor...', 'Talebi Gönder');
-      });
-    });
-
-    // ---- Sepet ----
-    const FREE_SHIPPING_LIMIT = 750;
-    let cartItems = [
-      { id: 1, name: 'Şeffaf Silikon Kılıf', variant: 'Nova X12 uyumlu', price: 149, qty: 1 },
-      { id: 2, name: 'USB-C Hızlı Şarj Kablosu', variant: '1 metre', price: 89, qty: 2 }
-    ];
-
-    function formatTL(n){ return n.toLocaleString('tr-TR') + '₺'; }
-
-    function renderCart(){
-      const list = document.getElementById('cartItemsList');
-      const footer = document.getElementById('cartFooter');
-      const badge = document.getElementById('cartBadge');
-      const title = document.getElementById('cartTitle');
-
-      const totalQty = cartItems.reduce((s,i) => s + i.qty, 0);
-      badge.textContent = totalQty;
-      title.textContent = 'Sepetim (' + totalQty + ')';
-
-      if (cartItems.length === 0){
-        list.innerHTML = '<p class="empty-cart">Sepetin şu an boş.</p>';
-        footer.style.display = 'none';
-        return;
-      }
-      footer.style.display = 'block';
-
-      list.innerHTML = cartItems.map(item => (
-        '<div class="cart-item">' +
-          '<div class="thumb"></div>' +
-          '<div class="info">' +
-            '<div class="name">' + item.name + '</div>' +
-            '<div class="variant">' + item.variant + '</div>' +
-            '<div class="qty-stepper">' +
-              '<button type="button" data-action="dec" data-id="' + item.id + '">−</button>' +
-              '<span>' + item.qty + '</span>' +
-              '<button type="button" data-action="inc" data-id="' + item.id + '">+</button>' +
-            '</div>' +
-          '</div>' +
-          '<div style="text-align:right;">' +
-            '<div class="line-price">' + formatTL(item.price * item.qty) + '</div>' +
-            '<button type="button" class="remove" data-action="remove" data-id="' + item.id + '">Kaldır</button>' +
-          '</div>' +
-        '</div>'
-      )).join('');
-
-      const subtotal = cartItems.reduce((s,i) => s + i.price * i.qty, 0);
-      document.getElementById('cartSubtotal').textContent = formatTL(subtotal);
-
-      const remaining = FREE_SHIPPING_LIMIT - subtotal;
-      const shipText = document.getElementById('shipText');
-      const shipFill = document.getElementById('shipFill');
-      if (remaining > 0){
-        shipText.innerHTML = 'Ücretsiz kargo için <strong>' + formatTL(remaining) + '</strong> kaldı';
-        shipFill.style.width = (subtotal / FREE_SHIPPING_LIMIT * 100) + '%';
-      } else {
-        shipText.innerHTML = '<strong>Kargon ücretsiz!</strong> 750 TL barajını geçtin.';
-        shipFill.style.width = '100%';
-      }
-
-      list.querySelectorAll('button[data-action]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = Number(btn.dataset.id);
-          const action = btn.dataset.action;
-          const item = cartItems.find(i => i.id === id);
-          if (!item) return;
-          if (action === 'inc') item.qty++;
-          if (action === 'dec') item.qty = Math.max(1, item.qty - 1);
-          if (action === 'remove') cartItems = cartItems.filter(i => i.id !== id);
-          renderCart();
-        });
-      });
-    }
-
-    document.getElementById('checkoutBtn').addEventListener('click', () => alert('Bu bir vitrin şablonudur — ödeme adımı bu demoda aktif değildir.'));
-
-    renderCart();
-
-    // ---- Yönetim girişi & panel ----
-    const ADMIN_EMAIL = 'cihanmobile@gmail.com';
-    const adminLoginLink = document.getElementById('adminLoginLink');
-    const adminLoginError = document.getElementById('adminLoginError');
-    let adminTopupSubscribed = false;
-
-    adminLoginLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      adminLoginError.style.display = 'none';
-      openPanel(adminLoginModal);
-    });
-
-    document.getElementById('adminLoginSubmit').addEventListener('click', () => {
-      const email = document.getElementById('adminEmail').value.trim();
-      const pass = document.getElementById('adminPassword').value;
-      const btn = document.getElementById('adminLoginSubmit');
-      adminLoginError.style.display = 'none';
-      if (!email || !pass){
-        adminLoginError.textContent = 'E-posta ve şifre gerekli.';
-        adminLoginError.style.display = 'block';
-        return;
-      }
-      setButtonBusy(btn, true, 'Giriş yapılıyor...', 'Giriş Yap');
-      auth.signInWithEmailAndPassword(email, pass).then(cred => {
-        setButtonBusy(btn, false, 'Giriş yapılıyor...', 'Giriş Yap');
-        if (cred.user.email !== ADMIN_EMAIL){
-          auth.signOut();
-          adminLoginError.textContent = 'Bu hesabın yönetim yetkisi yok.';
-          adminLoginError.style.display = 'block';
-          return;
-        }
-        document.getElementById('adminEmail').value = '';
-        document.getElementById('adminPassword').value = '';
-        renderAdminAddedList();
-        if (!adminTopupSubscribed){
-          adminTopupSubscribed = true;
-          subscribeAdminTopupRequests();
-        }
-        openPanel(adminPanel);
-      }).catch(() => {
-        setButtonBusy(btn, false, 'Giriş yapılıyor...', 'Giriş Yap');
-        adminLoginError.textContent = 'E-posta veya şifre hatalı.';
-        adminLoginError.style.display = 'block';
-      });
-    });
-
-    function loadAdminProducts(){
-      try { return JSON.parse(localStorage.getItem('cmg_admin_products') || '[]'); }
-      catch(e){ return []; }
-    }
-    function saveAdminProducts(list){
-      localStorage.setItem('cmg_admin_products', JSON.stringify(list));
-    }
-    function renderProductCard(p){
-      const prodGrid = document.querySelector('.prod-grid');
-      const card = document.createElement('div');
-      card.className = 'prod-card';
-      card.dataset.adminId = p.id;
-      card.innerHTML =
-        '<div class="prod-thumb">' + (p.tag ? '<span class="tag">' + p.tag + '</span>' : '') + '<div class="mini-phone"></div></div>' +
-        '<div class="prod-info">' +
-          '<span class="prod-cat">' + p.cat + '</span>' +
-          '<span class="prod-name">' + p.name + '</span>' +
-          '<div class="prod-rating">☆☆☆☆☆ <span>(0)</span></div>' +
-          '<div class="prod-bottom">' +
-            '<span class="price">' + formatTL(p.price) + '</span>' +
-            '<button class="add-btn">Sepete Ekle</button>' +
-          '</div>' +
-        '</div>';
-      prodGrid.appendChild(card);
-    }
-    function renderAdminAddedList(){
-      const list = loadAdminProducts();
-      const wrap = document.getElementById('apAddedList');
-      if (list.length === 0){
-        wrap.innerHTML = '<p style="font-size:12.5px; color:var(--muted-2);">Henüz panelden ürün eklenmedi.</p>';
-        return;
-      }
-      wrap.innerHTML = list.map(p =>
-        '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line-soft); font-size:13px;">' +
-          '<span>' + p.name + ' — ' + formatTL(p.price) + '</span>' +
-          '<button type="button" data-remove-id="' + p.id + '" style="background:none;border:none;color:var(--muted-2);text-decoration:underline;cursor:pointer;font-size:12px;font-family:inherit;">Sil</button>' +
-        '</div>'
-      ).join('');
-      wrap.querySelectorAll('button[data-remove-id]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = btn.dataset.removeId;
-          const remaining = loadAdminProducts().filter(p => String(p.id) !== id);
-          saveAdminProducts(remaining);
-          const card = document.querySelector('.prod-card[data-admin-id="' + id + '"]');
-          if (card) card.remove();
-          renderAdminAddedList();
-        });
-      });
-    }
-    document.getElementById('apAddBtn').addEventListener('click', () => {
-      const cat = document.getElementById('apCat').value.trim();
-      const name = document.getElementById('apName').value.trim();
-      const price = Number(document.getElementById('apPrice').value);
-      const tag = document.getElementById('apTag').value.trim();
-      if (!cat || !name || !price){
-        alert('Lütfen kategori, ürün adı ve fiyat alanlarını doldurun.');
-        return;
-      }
-      const product = { id: Date.now(), cat, name, price, tag };
-      const list = loadAdminProducts();
-      list.push(product);
-      saveAdminProducts(list);
-      renderProductCard(product);
-      renderAdminAddedList();
-      document.getElementById('apCat').value = '';
-      document.getElementById('apName').value = '';
-      document.getElementById('apPrice').value = '';
-      document.getElementById('apTag').value = '';
-    });
-    // Sayfa yüklendiğinde daha önce panelden eklenmiş ürünleri göster
-    loadAdminProducts().forEach(renderProductCard);
-
-    // ---- Yönetim: bakiye yükleme taleplerini onaylama/reddetme (gerçek zamanlı) ----
-    function subscribeAdminTopupRequests(){
-      db.collection('topupRequests').orderBy('createdAt', 'desc').onSnapshot(snap => {
-        const requests = [];
-        snap.forEach(doc => requests.push(Object.assign({ id: doc.id }, doc.data())));
-        renderAdminTopupList(requests);
-      }, err => {
-        document.getElementById('apTopupList').innerHTML =
-          '<p style="font-size:12.5px; color:#E0736B;">Talepler yüklenemedi: ' + err.message + '</p>';
-      });
-    }
-
-    function renderAdminTopupList(requests){
-      const wrap = document.getElementById('apTopupList');
-      if (requests.length === 0){
-        wrap.innerHTML = '<p style="font-size:12.5px; color:var(--muted-2);">Henüz bakiye yükleme talebi yok.</p>';
-        return;
-      }
-      wrap.innerHTML = requests.map(r => {
-        const statusLabel = r.status === 'approved' ? 'Onaylandı, bakiyeye eklendi' : (r.status === 'rejected' ? 'Reddedildi' : 'Onay bekliyor');
-        const statusColor = r.status === 'approved' ? '#8BC98B' : (r.status === 'rejected' ? '#E0736B' : 'var(--gold)');
-        const actions = r.status === 'pending'
-          ? '<div><button type="button" class="btn-approve" data-id="' + r.id + '">Onayla</button><button type="button" class="btn-reject" data-id="' + r.id + '">Reddet</button></div>'
-          : '';
-        return (
-          '<div class="admin-topup-row">' +
-            '<div>' +
-              '<strong>' + r.name + '</strong>' +
-              '<div style="font-size:11.5px; color:var(--muted-2);">' + r.email + '</div>' +
-              '<div style="margin-top:3px;">' + formatTL(r.amount) + ' bakiye yükleme talebi</div>' +
-            '</div>' +
-            '<div style="text-align:right;">' +
-              '<div style="font-size:11px; color:' + statusColor + '; margin-bottom:7px;">' + statusLabel + '</div>' +
-              actions +
-            '</div>' +
-          '</div>'
-        );
-      }).join('');
-
-      wrap.querySelectorAll('.btn-approve').forEach(btn => {
-        btn.addEventListener('click', () => {
-          btn.disabled = true;
-          const id = btn.dataset.id;
-          const reqRef = db.collection('topupRequests').doc(id);
-          db.runTransaction(tx => {
-            return tx.get(reqRef).then(reqSnap => {
-              if (!reqSnap.exists) throw new Error('Talep bulunamadı.');
-              const req = reqSnap.data();
-              if (req.status !== 'pending') throw new Error('Talep zaten işlenmiş.');
-              const balRef = db.collection('balances').doc(req.uid);
-              return tx.get(balRef).then(balSnap => {
-                const current = balSnap.exists ? (balSnap.data().amount || 0) : 0;
-                tx.set(balRef, { amount: current + req.amount }, { merge: true });
-                tx.update(reqRef, { status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp() });
-              });
-            });
-          }).catch(err => {
-            alert('Onaylama başarısız: ' + err.message);
-            btn.disabled = false;
-          });
-        });
-      });
-      wrap.querySelectorAll('.btn-reject').forEach(btn => {
-        btn.addEventListener('click', () => {
-          btn.disabled = true;
-          const id = btn.dataset.id;
-          db.collection('topupRequests').doc(id).update({ status: 'rejected' }).catch(err => {
-            alert('Reddetme başarısız: ' + err.message);
-            btn.disabled = false;
-          });
-        });
-      });
-    }
-
-    // ---- İletişim formu ----
-    const contactForm = document.getElementById('contactForm');
-    const formSuccess = document.getElementById('formSuccess');
-    contactForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      formSuccess.classList.add('show');
-      contactForm.reset();
-    });
   </script>
 
   <section class="hero">
@@ -1834,30 +1429,30 @@
       </div>
 
       <div class="cat-grid">
-        <a href="#cat-telefon" id="cat-telefon" class="cat-card">
+        <a href="#urunler" id="cat-telefon" class="cat-card" data-cat-key="telefon">
           <svg class="cat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
           <span>Telefon</span>
-          <small>240+ ürün</small>
+          <small>Hesaplanıyor...</small>
         </a>
-        <a href="#cat-sarj" id="cat-sarj" class="cat-card">
+        <a href="#urunler" id="cat-sarj" class="cat-card" data-cat-key="sarj">
           <svg class="cat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="10" x2="22" y2="14"/></svg>
           <span>Şarj Aletleri</span>
-          <small>96 ürün</small>
+          <small>Hesaplanıyor...</small>
         </a>
-        <a href="#cat-kulaklik" id="cat-kulaklik" class="cat-card">
+        <a href="#urunler" id="cat-kulaklik" class="cat-card" data-cat-key="kulaklik">
           <svg class="cat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 14v-2a9 9 0 0118 0v2"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
           <span>Kulaklık</span>
-          <small>85 ürün</small>
+          <small>Hesaplanıyor...</small>
         </a>
-        <a href="#cat-kilif" id="cat-kilif" class="cat-card">
+        <a href="#urunler" id="cat-kilif" class="cat-card" data-cat-key="kilif">
           <svg class="cat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9V5a2 2 0 012-2h2M4 15v4a2 2 0 002 2h2M20 9V5a2 2 0 00-2-2h-2M20 15v4a2 2 0 01-2 2h-2"/></svg>
           <span>Kılıf &amp; Aksesuar</span>
-          <small>310 ürün</small>
+          <small>Hesaplanıyor...</small>
         </a>
-        <a href="#cat-kablo" id="cat-kablo" class="cat-card">
+        <a href="#urunler" id="cat-kablo" class="cat-card" data-cat-key="kablo">
           <svg class="cat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>
           <span>Ek Kablolar</span>
-          <small>128 ürün</small>
+          <small>Hesaplanıyor...</small>
         </a>
       </div>
     </div>
@@ -1866,13 +1461,13 @@
   <section id="urunler" style="padding-top:0;">
     <div class="wrap">
       <div class="section-head">
-        <div class="htext"><span class="kicker">SEÇKİ</span><h2>Çok satanlar</h2></div>
-        <a href="#">Tüm ürünler</a>
+        <div class="htext"><span class="kicker">SEÇKİ</span><h2 id="urunlerBaslik">Çok satanlar</h2></div>
+        <a href="#urunler" id="resetCatFilter" style="display:none;">Tüm ürünler</a>
       </div>
 
       <div class="prod-grid">
-        <div class="prod-card">
-          <div class="prod-thumb"><div class="mini-phone"></div></div>
+        <div class="prod-card" data-static-id="p1">
+          <div class="prod-thumb"><span class="tag tag-featured">Öne Çıkan</span><div class="mini-phone"></div></div>
           <div class="prod-info">
             <span class="prod-cat">Akıllı Telefon</span>
             <span class="prod-name">Orbit S8 Lite</span>
@@ -1884,8 +1479,8 @@
           </div>
         </div>
 
-        <div class="prod-card">
-          <div class="prod-thumb"><span class="tag">Yeni</span><div class="mini-phone"></div></div>
+        <div class="prod-card" data-static-id="p2">
+          <div class="prod-thumb"><span class="tag tag-new">Yeni</span><div class="mini-phone"></div></div>
           <div class="prod-info">
             <span class="prod-cat">Kulaklık</span>
             <span class="prod-name">Pulse Buds Pro</span>
@@ -1897,14 +1492,14 @@
           </div>
         </div>
 
-        <div class="prod-card">
-          <div class="prod-thumb"><div class="mini-phone"></div></div>
+        <div class="prod-card" data-static-id="p3">
+          <div class="prod-thumb"><span class="tag tag-discount">%25 İndirim</span><div class="mini-phone"></div></div>
           <div class="prod-info">
             <span class="prod-cat">Powerbank</span>
             <span class="prod-name">Volt 20.000mAh</span>
             <div class="prod-rating">★★★★☆ <span>(76)</span></div>
             <div class="prod-bottom">
-              <span class="price">890₺</span>
+              <span class="price"><span class="old">1.190₺</span>890₺</span>
               <button class="add-btn">Sepete Ekle</button>
             </div>
           </div>
@@ -2108,11 +1703,982 @@
         <span>© 2026 Cihan Mobile Group. Tüm hakları saklıdır.</span>
         <span>750 TL üzeri kargo ücretsiz · Aynı gün kargo · 2 yıl garanti</span>
       </div>
-      <div style="text-align:center; padding-top:12px;">
-        <a href="#" id="adminLoginLink" style="font-size:11px; color:var(--muted-2);">Yönetim Girişi</a>
-      </div>
     </div>
   </footer>
 
+  <script>
+    // ---- Ortak panel yönetimi ----
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileNavPanel = document.getElementById('mobileNavPanel');
+    const accountBtn = document.getElementById('accountBtn');
+    const accountModal = document.getElementById('accountModal');
+    const cartBtn = document.getElementById('cartBtn');
+    const cartDrawer = document.getElementById('cartDrawer');
+    const adminLoginModal = document.getElementById('adminLoginModal');
+    const adminPanel = document.getElementById('adminPanel');
+    const topupModal = document.getElementById('topupModal');
+    const productModal = document.getElementById('productModal');
+    const toastEl = document.getElementById('toast');
+    const allPanels = [mobileNavPanel, accountModal, cartDrawer, adminLoginModal, adminPanel, topupModal, productModal];
+
+    function showToast(msg){
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toastEl.classList.remove('show'), 2200);
+    }
+
+    function closeAllPanels(){
+      allPanels.forEach(p => p.classList.remove('open'));
+      overlay.classList.remove('show');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    }
+    function openPanel(panel){
+      allPanels.forEach(p => p !== panel && p.classList.remove('open'));
+      panel.classList.add('open');
+      overlay.classList.add('show');
+    }
+
+    menuToggle.addEventListener('click', () => {
+      const willOpen = !mobileNavPanel.classList.contains('open');
+      if (willOpen){ openPanel(mobileNavPanel); menuToggle.setAttribute('aria-expanded','true'); }
+      else { closeAllPanels(); }
+    });
+    accountBtn.addEventListener('click', () => openPanel(accountModal));
+    cartBtn.addEventListener('click', () => { renderCart(); openPanel(cartDrawer); });
+    document.getElementById('balancePill').addEventListener('click', () => openPanel(topupModal));
+    document.getElementById('openTopupBtn').addEventListener('click', () => openPanel(topupModal));
+
+    overlay.addEventListener('click', closeAllPanels);
+    document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', closeAllPanels));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllPanels(); });
+    mobileNavPanel.querySelectorAll('a').forEach(link => link.addEventListener('click', closeAllPanels));
+
+    // ---- Üyelik sekmeleri ----
+    document.querySelectorAll('.tab-btn').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelector('.tab-panel[data-panel="' + tab.dataset.tab + '"]').classList.add('active');
+      });
+    });
+    // ---- Gerçek kayıt / giriş sistemi (Firebase Authentication) ----
+    function firebaseErrorMessage(code){
+      switch(code){
+        case 'auth/email-already-in-use': return 'Bu e-posta adresiyle zaten bir hesap var. Giriş yapmayı dener misin?';
+        case 'auth/invalid-email': return 'Lütfen geçerli bir e-posta adresi gir.';
+        case 'auth/weak-password': return 'Şifre en az 6 karakter olmalı.';
+        case 'auth/missing-password': return 'Lütfen bir şifre gir.';
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          return 'E-posta veya şifre hatalı.';
+        case 'auth/too-many-requests':
+          return 'Çok fazla başarısız deneme oldu. Lütfen biraz sonra tekrar dene.';
+        case 'auth/network-request-failed':
+          return 'Bağlantı hatası. İnternet bağlantını kontrol et.';
+        case 'auth/operation-not-allowed':
+          return 'E-posta/Şifre girişi Firebase Console\'da henüz açılmamış (Authentication > Sign-in method).';
+        case 'auth/unauthorized-domain':
+          return 'Bu site adresi Firebase\'de yetkili domain listesinde değil (Authentication > Settings > Authorized domains).';
+        case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
+        case 'auth/invalid-api-key':
+          return 'Firebase API anahtarı geçersiz veya kısıtlanmış.';
+        default:
+          return 'Bir şeyler ters gitti (' + (code || 'bilinmeyen hata') + '). Lütfen tekrar dene.';
+      }
+    }
+    function setFieldError(id, msg){
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = msg || '';
+      el.style.display = msg ? 'block' : 'none';
+    }
+    function setButtonBusy(btn, busy, busyText, idleText){
+      btn.disabled = busy;
+      btn.textContent = busy ? busyText : idleText;
+      btn.style.opacity = busy ? '0.7' : '1';
+    }
+
+    const loginSubmitBtn = document.getElementById('loginSubmit');
+    const registerSubmitBtn = document.getElementById('registerSubmit');
+
+    loginSubmitBtn.addEventListener('click', () => {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      setFieldError('loginError', '');
+      setFieldError('loginResetNote', '');
+      if (!email || !password){
+        setFieldError('loginError', 'Lütfen e-posta ve şifreni gir.');
+        return;
+      }
+      setButtonBusy(loginSubmitBtn, true, 'Giriş yapılıyor...', 'Giriş Yap');
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          document.getElementById('loginEmail').value = '';
+          document.getElementById('loginPassword').value = '';
+          closeAllPanels();
+        })
+        .catch(err => { console.error('Firebase login error:', err); setFieldError('loginError', firebaseErrorMessage(err.code)); })
+        .finally(() => setButtonBusy(loginSubmitBtn, false, 'Giriş yapılıyor...', 'Giriş Yap'));
+    });
+
+    registerSubmitBtn.addEventListener('click', () => {
+      const name = document.getElementById('registerName').value.trim();
+      const email = document.getElementById('registerEmail').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      setFieldError('registerError', '');
+      if (!name || !email || !password){
+        setFieldError('registerError', 'Lütfen tüm alanları doldur.');
+        return;
+      }
+      if (password.length < 6){
+        setFieldError('registerError', 'Şifre en az 6 karakter olmalı.');
+        return;
+      }
+      setButtonBusy(registerSubmitBtn, true, 'Hesap oluşturuluyor...', 'Üye Ol');
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(cred => cred.user.updateProfile({ displayName: name }))
+        .then(() => {
+          document.getElementById('registerName').value = '';
+          document.getElementById('registerEmail').value = '';
+          document.getElementById('registerPassword').value = '';
+          closeAllPanels();
+        })
+        .catch(err => { console.error('Firebase register error:', err); setFieldError('registerError', firebaseErrorMessage(err.code)); })
+        .finally(() => setButtonBusy(registerSubmitBtn, false, 'Hesap oluşturuluyor...', 'Üye Ol'));
+    });
+
+    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      setFieldError('loginError', '');
+      setFieldError('loginResetNote', '');
+      if (!email){
+        setFieldError('loginError', 'Şifre sıfırlama bağlantısı göndermek için önce e-posta adresini gir.');
+        return;
+      }
+      auth.sendPasswordResetEmail(email)
+        .then(() => setFieldError('loginResetNote', 'Şifre sıfırlama bağlantısı e-postana gönderildi.'))
+        .catch(err => { console.error('Firebase login error:', err); setFieldError('loginError', firebaseErrorMessage(err.code)); });
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      auth.signOut();
+      closeAllPanels();
+    });
+
+    let currentUser = null;
+    let unsubscribeBalance = null;
+    let currentBalance = 0;
+
+    auth.onAuthStateChanged(user => {
+      currentUser = user;
+      const loggedOutView = document.getElementById('accountLoggedOut');
+      const loggedInView = document.getElementById('accountLoggedIn');
+      if (user){
+        loggedOutView.style.display = 'none';
+        loggedInView.style.display = 'block';
+        document.getElementById('accountUserName').textContent = user.displayName || 'Üye';
+        document.getElementById('accountUserEmail').textContent = user.email || '';
+        accountBtn.classList.add('logged-in');
+        subscribeUserBalance(user.uid);
+      } else {
+        loggedOutView.style.display = 'block';
+        loggedInView.style.display = 'none';
+        accountBtn.classList.remove('logged-in');
+        if (unsubscribeBalance){ unsubscribeBalance(); unsubscribeBalance = null; }
+        updateBalanceUI(0);
+      }
+    });
+
+    // ---- Bakiye yükleme sistemi (Firestore — çok kullanıcılı, gerçek zamanlı) ----
+    const BANK_IBAN = 'TR55 0015 7000 0000 0202 8357 31';
+
+    function subscribeUserBalance(uid){
+      if (unsubscribeBalance){ unsubscribeBalance(); }
+      unsubscribeBalance = db.collection('balances').doc(uid).onSnapshot(snap => {
+        const amount = snap.exists ? (snap.data().amount || 0) : 0;
+        updateBalanceUI(amount);
+      }, () => updateBalanceUI(0));
+    }
+
+    function updateBalanceUI(amount){
+      currentBalance = currentUser ? amount : 0;
+      const pill = document.getElementById('balancePill');
+      const amountText = document.getElementById('balanceAmountText');
+      const accBalanceEl = document.getElementById('accountBalanceAmount');
+      if (currentUser){
+        pill.classList.add('show');
+        amountText.textContent = formatTL(amount);
+        if (accBalanceEl) accBalanceEl.textContent = formatTL(amount);
+      } else {
+        pill.classList.remove('show');
+      }
+      renderCart();
+    }
+
+    document.getElementById('copyIbanBtn').addEventListener('click', () => {
+      const btn = document.getElementById('copyIbanBtn');
+      const finish = (ok) => {
+        const old = 'IBAN\'ı Kopyala';
+        btn.textContent = ok ? 'Kopyalandı ✓' : 'Kopyalanamadı';
+        setTimeout(() => btn.textContent = old, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(BANK_IBAN).then(() => finish(true)).catch(() => finish(false));
+      } else {
+        finish(false);
+      }
+    });
+
+    const topupSubmitBtn = document.getElementById('topupSubmitBtn');
+    topupSubmitBtn.addEventListener('click', () => {
+      setFieldError('topupError', '');
+      setFieldError('topupSuccess', '');
+      if (!currentUser){
+        setFieldError('topupError', 'Talep gönderebilmek için önce giriş yapmalısın.');
+        return;
+      }
+      const amountInput = document.getElementById('topupAmount');
+      const amount = Number(amountInput.value);
+      if (!amount || amount <= 0){
+        setFieldError('topupError', 'Lütfen geçerli bir tutar gir.');
+        return;
+      }
+      setButtonBusy(topupSubmitBtn, true, 'Gönderiliyor...', 'Talebi Gönder');
+      db.collection('topupRequests').add({
+        uid: currentUser.uid,
+        name: currentUser.displayName || 'Üye',
+        email: currentUser.email || '',
+        amount: amount,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        amountInput.value = '';
+        setFieldError('topupSuccess', 'Talebin alındı. Yönetim onayladığında bakiyene yansıyacak.');
+      }).catch(() => {
+        setFieldError('topupError', 'Talep gönderilemedi, lütfen tekrar dene.');
+      }).finally(() => {
+        setButtonBusy(topupSubmitBtn, false, 'Gönderiliyor...', 'Talebi Gönder');
+      });
+    });
+
+    // ---- Sepet ----
+    const FREE_SHIPPING_LIMIT = 750;
+    let cartItems = [
+      { id: 1, name: 'Şeffaf Silikon Kılıf', variant: 'Nova X12 uyumlu', price: 149, qty: 1 },
+      { id: 2, name: 'USB-C Hızlı Şarj Kablosu', variant: '1 metre', price: 89, qty: 2 }
+    ];
+
+    function formatTL(n){ return n.toLocaleString('tr-TR') + '₺'; }
+
+    function renderCart(){
+      const list = document.getElementById('cartItemsList');
+      const footer = document.getElementById('cartFooter');
+      const badge = document.getElementById('cartBadge');
+      const title = document.getElementById('cartTitle');
+
+      const totalQty = cartItems.reduce((s,i) => s + i.qty, 0);
+      badge.textContent = totalQty;
+      title.textContent = 'Sepetim (' + totalQty + ')';
+
+      const balanceRow = document.getElementById('cartBalanceRow');
+      const balanceAmountEl = document.getElementById('cartBalanceAmount');
+      if (currentUser){
+        balanceRow.style.display = 'flex';
+        balanceAmountEl.textContent = formatTL(currentBalance);
+      } else {
+        balanceRow.style.display = 'none';
+      }
+
+      if (cartItems.length === 0){
+        list.innerHTML = '<p class="empty-cart">Sepetin şu an boş.</p>';
+        footer.style.display = 'none';
+        return;
+      }
+      footer.style.display = 'block';
+
+      list.innerHTML = cartItems.map(item => (
+        '<div class="cart-item">' +
+          '<div class="thumb"></div>' +
+          '<div class="info">' +
+            '<div class="name">' + item.name + '</div>' +
+            '<div class="variant">' + item.variant + '</div>' +
+            '<div class="qty-stepper">' +
+              '<button type="button" data-action="dec" data-id="' + item.id + '">−</button>' +
+              '<span>' + item.qty + '</span>' +
+              '<button type="button" data-action="inc" data-id="' + item.id + '">+</button>' +
+            '</div>' +
+          '</div>' +
+          '<div style="text-align:right;">' +
+            '<div class="line-price">' + formatTL(item.price * item.qty) + '</div>' +
+            '<button type="button" class="remove" data-action="remove" data-id="' + item.id + '">Kaldır</button>' +
+          '</div>' +
+        '</div>'
+      )).join('');
+
+      const subtotal = cartItems.reduce((s,i) => s + i.price * i.qty, 0);
+      document.getElementById('cartSubtotal').textContent = formatTL(subtotal);
+
+      const remaining = FREE_SHIPPING_LIMIT - subtotal;
+      const shipText = document.getElementById('shipText');
+      const shipFill = document.getElementById('shipFill');
+      if (remaining > 0){
+        shipText.innerHTML = 'Ücretsiz kargo için <strong>' + formatTL(remaining) + '</strong> kaldı';
+        shipFill.style.width = (subtotal / FREE_SHIPPING_LIMIT * 100) + '%';
+      } else {
+        shipText.innerHTML = '<strong>Kargon ücretsiz!</strong> 750 TL barajını geçtin.';
+        shipFill.style.width = '100%';
+      }
+
+      list.querySelectorAll('button[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          const action = btn.dataset.action;
+          const item = cartItems.find(i => String(i.id) === String(id));
+          if (!item) return;
+          if (action === 'inc') item.qty++;
+          if (action === 'dec') item.qty = Math.max(1, item.qty - 1);
+          if (action === 'remove') cartItems = cartItems.filter(i => String(i.id) !== String(id));
+          renderCart();
+        });
+      });
+    }
+
+    // ---- Ürün kartı: fiyat okuma, sepete ekleme, ürün detay modalı ----
+    function extractPriceFromCard(card){
+      const priceEl = card.querySelector('.price');
+      if (!priceEl) return 0;
+      const clone = priceEl.cloneNode(true);
+      const old = clone.querySelector('.old');
+      if (old) old.remove();
+      const digits = clone.textContent.replace(/[^\d]/g, '');
+      return Number(digits) || 0;
+    }
+
+    function genDescription(name, cat){
+      const c = (cat || '').toLowerCase();
+      if (/telefon/.test(c)){
+        return name + ', güçlü işlemcisi ve uzun ömürlü bataryasıyla günlük kullanımda akıcı bir deneyim sunar. Şık tasarımı ve dayanıklı gövdesiyle yoğun kullanımda da öne çıkar. Kutu içeriği eksiksizdir, orijinal ürün 2 yıl resmi garanti kapsamındadır.';
+      }
+      if (/kulakl/.test(c)){
+        return name + ', net ses kalitesi ve konforlu kullanımıyla müzik dinlerken ve görüşmelerde fark yaratır. Uzun pil ömrü ve hızlı eşleşme özelliğiyle günün her anında yanınızda. Orijinal ürün, kutusunda ve garantilidir.';
+      }
+      if (/powerbank|şarj|sarj|adapt|kablo/.test(c)){
+        return name + ', hızlı şarj desteğiyle cihazlarınızı güvenle ve kısa sürede doldurur. Kompakt tasarımı sayesinde çantanızda kolayca taşınır. Orijinal, test edilmiş ve garantili üründür.';
+      }
+      if (/k[ıi]l[ıi]f|aksesuar|kapak|koruyucu/.test(c)){
+        return name + ', cihazınızı darbelere ve çizilmeye karşı korurken şık görünümünden ödün vermez. Hassas kesim sayesinde tüm tuş ve girişlere tam uyum sağlar. Orijinal ürün, hızlı kargo ile gönderilir.';
+      }
+      return name + ', kaliteli malzemesi ve özenli işçiliğiyle uzun süre güvenle kullanabileceğiniz bir tercihtir. Orijinal ürün olup 2 yıl garanti kapsamındadır. Satış öncesi ve sonrasında WhatsApp, telefon ve e-posta üzerinden ekibimize ulaşabilirsiniz.';
+    }
+
+    function addOrIncrementCart(id, name, price, variant){
+      const existing = cartItems.find(i => String(i.id) === String(id));
+      if (existing) existing.qty++;
+      else cartItems.push({ id, name, variant, price, qty: 1 });
+      renderCart();
+    }
+
+    function getCardInfo(card){
+      const name = (card.querySelector('.prod-name') || {}).textContent || 'Ürün';
+      const cat = (card.querySelector('.prod-cat') || {}).textContent || '';
+      const price = extractPriceFromCard(card);
+      const id = card.dataset.staticId || card.dataset.adminId || name.trim();
+      return { id, name: name.trim(), cat: cat.trim(), price };
+    }
+
+    function handleAddToCart(card){
+      const info = getCardInfo(card);
+      addOrIncrementCart(info.id, info.name, info.price, info.cat);
+      showToast(info.name + ' sepete eklendi ✓');
+    }
+
+    function openProductModal(card){
+      const info = getCardInfo(card);
+      const ratingEl = card.querySelector('.prod-rating');
+      const priceEl = card.querySelector('.price');
+      const images = card.dataset.images ? (JSON.parse(card.dataset.images || '[]')) : [];
+
+      document.getElementById('pmImage').innerHTML = images.length
+        ? '<img src="' + images[0] + '" alt="' + info.name + '">'
+        : '<div class="mini-phone"></div>';
+      document.getElementById('pmCat').textContent = info.cat;
+      document.getElementById('pmName').textContent = info.name;
+      document.getElementById('pmRating').innerHTML = ratingEl ? ratingEl.innerHTML : '';
+      document.getElementById('pmPrice').innerHTML = priceEl ? priceEl.outerHTML : formatTL(info.price);
+      document.getElementById('pmDesc').textContent = genDescription(info.name, info.cat);
+
+      productModal.dataset.id = info.id;
+      productModal.dataset.name = info.name;
+      productModal.dataset.price = info.price;
+      productModal.dataset.variant = info.cat;
+
+      closeAllPanels();
+      openPanel(productModal);
+    }
+
+    document.querySelector('.prod-grid').addEventListener('click', (e) => {
+      if (e.target.closest('.gallery-arrow')) return;
+      const card = e.target.closest('.prod-card');
+      if (!card) return;
+      if (e.target.closest('.add-btn')){
+        e.stopPropagation();
+        handleAddToCart(card);
+        return;
+      }
+      openProductModal(card);
+    });
+
+    document.getElementById('pmAddBtn').addEventListener('click', () => {
+      const d = productModal.dataset;
+      addOrIncrementCart(d.id, d.name, Number(d.price), d.variant);
+      showToast(d.name + ' sepete eklendi ✓');
+    });
+
+    document.getElementById('pmBuyBtn').addEventListener('click', () => {
+      const d = productModal.dataset;
+      addOrIncrementCart(d.id, d.name, Number(d.price), d.variant);
+      closeAllPanels();
+      renderCart();
+      openPanel(cartDrawer);
+      const addr = document.getElementById('checkoutAddress');
+      if (addr) setTimeout(() => addr.focus(), 250);
+    });
+
+    document.getElementById('pmContactBtn').addEventListener('click', () => {
+      const d = productModal.dataset;
+      const msg = 'Merhaba, "' + d.name + '" ürünü hakkında bilgi almak istiyorum.';
+      window.open('https://wa.me/905339492452?text=' + encodeURIComponent(msg), '_blank');
+    });
+
+    function showCheckoutMessage(html, color){
+      const el = document.getElementById('checkoutMessage');
+      el.innerHTML = html;
+      el.style.color = color;
+      el.style.display = 'block';
+    }
+
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    checkoutBtn.addEventListener('click', () => {
+      document.getElementById('checkoutMessage').style.display = 'none';
+
+      if (!currentUser){
+        showCheckoutMessage('Bakiye ile ödeme yapabilmek için önce giriş yapmalısın.', '#E0736B');
+        closeAllPanels();
+        openPanel(accountModal);
+        return;
+      }
+      if (cartItems.length === 0){
+        showCheckoutMessage('Sepetin şu an boş.', '#E0736B');
+        return;
+      }
+
+      const addressEl = document.getElementById('checkoutAddress');
+      const address = addressEl.value.trim();
+      if (!address){
+        showCheckoutMessage('Devam etmek için teslimat adresini girmelisin.', '#E0736B');
+        addressEl.focus();
+        return;
+      }
+
+      const subtotal = cartItems.reduce((s,i) => s + i.price * i.qty, 0);
+      let balanceAtCheck = 0;
+      setButtonBusy(checkoutBtn, true, 'Ödeme yapılıyor...', 'Bakiye ile Öde');
+
+      const balRef = db.collection('balances').doc(currentUser.uid);
+      db.runTransaction(tx => {
+        return tx.get(balRef).then(snap => {
+          const current = snap.exists ? (snap.data().amount || 0) : 0;
+          balanceAtCheck = current;
+          if (current < subtotal) throw new Error('INSUFFICIENT');
+          tx.set(balRef, { amount: current - subtotal }, { merge: true });
+        });
+      }).then(() => {
+        // Sipariş kaydı — bakiye düşümü zaten tamamlandı, bu adım sadece kayıt amaçlıdır
+        db.collection('orders').add({
+          uid: currentUser.uid,
+          email: currentUser.email || '',
+          items: cartItems.map(i => ({ name: i.name, variant: i.variant, price: i.price, qty: i.qty })),
+          total: subtotal,
+          address: address,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(() => {});
+
+        cartItems = [];
+        addressEl.value = '';
+        renderCart();
+        showCheckoutMessage('Ödeme başarılı! ' + formatTL(subtotal) + ' bakiyenden düşüldü. Siparişin adresine gönderilecek.', '#8BC98B');
+      }).catch(err => {
+        if (err && err.message === 'INSUFFICIENT'){
+          const eksik = subtotal - balanceAtCheck;
+          showCheckoutMessage(
+            'Bakiyen yetersiz. ' + formatTL(eksik) + ' daha yüklemen gerekiyor. ' +
+            '<a href="#" id="goTopupFromCart" style="text-decoration:underline; color:var(--gold);">Bakiye Yükle</a>',
+            '#E0736B'
+          );
+          const link = document.getElementById('goTopupFromCart');
+          if (link) link.addEventListener('click', (e) => { e.preventDefault(); openPanel(topupModal); });
+        } else {
+          console.error('Ödeme hatası:', err);
+          showCheckoutMessage('Ödeme sırasında bir hata oluştu, lütfen tekrar dene.', '#E0736B');
+        }
+      }).finally(() => {
+        setButtonBusy(checkoutBtn, false, 'Ödeme yapılıyor...', 'Bakiye ile Öde');
+      });
+    });
+
+    renderCart();
+
+    // ---- Yönetim girişi & panel ----
+    const ADMIN_EMAIL = 'cihanmobile@gmail.com';
+    const adminLoginLink = document.getElementById('adminLoginLink');
+    const adminLoginError = document.getElementById('adminLoginError');
+    let adminTopupSubscribed = false;
+
+    adminLoginLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      adminLoginError.style.display = 'none';
+      openPanel(adminLoginModal);
+    });
+
+    document.getElementById('adminLoginSubmit').addEventListener('click', () => {
+      const email = document.getElementById('adminEmail').value.trim();
+      const pass = document.getElementById('adminPassword').value;
+      const btn = document.getElementById('adminLoginSubmit');
+      adminLoginError.style.display = 'none';
+      if (!email || !pass){
+        adminLoginError.textContent = 'E-posta ve şifre gerekli.';
+        adminLoginError.style.display = 'block';
+        return;
+      }
+      setButtonBusy(btn, true, 'Giriş yapılıyor...', 'Giriş Yap');
+      auth.signInWithEmailAndPassword(email, pass).then(cred => {
+        setButtonBusy(btn, false, 'Giriş yapılıyor...', 'Giriş Yap');
+        if (cred.user.email !== ADMIN_EMAIL){
+          auth.signOut();
+          adminLoginError.textContent = 'Bu hesabın yönetim yetkisi yok.';
+          adminLoginError.style.display = 'block';
+          return;
+        }
+        document.getElementById('adminEmail').value = '';
+        document.getElementById('adminPassword').value = '';
+        renderAdminAddedList();
+        renderExistingList();
+        if (!adminTopupSubscribed){
+          adminTopupSubscribed = true;
+          subscribeAdminTopupRequests();
+        }
+        openPanel(adminPanel);
+      }).catch(() => {
+        setButtonBusy(btn, false, 'Giriş yapılıyor...', 'Giriş Yap');
+        adminLoginError.textContent = 'E-posta veya şifre hatalı.';
+        adminLoginError.style.display = 'block';
+      });
+    });
+
+    function loadAdminProducts(){
+      try { return JSON.parse(localStorage.getItem('cmg_admin_products') || '[]'); }
+      catch(e){ return []; }
+    }
+    function saveAdminProducts(list){
+      localStorage.setItem('cmg_admin_products', JSON.stringify(list));
+    }
+
+    // ---- Sitede önceden var olan (statik) ilanları silme sistemi ----
+    const STATIC_PRODUCTS = [
+      { id: 'p1', name: 'Orbit S8 Lite', price: 9450 },
+      { id: 'p2', name: 'Pulse Buds Pro', price: 1290 },
+      { id: 'p3', name: 'Volt 20.000mAh', price: 890 }
+    ];
+    function loadDeletedStatic(){
+      try { return JSON.parse(localStorage.getItem('cmg_deleted_static') || '[]'); }
+      catch(e){ return []; }
+    }
+    function saveDeletedStatic(list){
+      localStorage.setItem('cmg_deleted_static', JSON.stringify(list));
+    }
+    function applyDeletedStatic(){
+      loadDeletedStatic().forEach(id => {
+        const card = document.querySelector('.prod-card[data-static-id="' + id + '"]');
+        if (card) card.remove();
+      });
+    }
+    function renderExistingList(){
+      const deleted = loadDeletedStatic();
+      const remaining = STATIC_PRODUCTS.filter(p => !deleted.includes(p.id));
+      const wrap = document.getElementById('apExistingList');
+      if (remaining.length === 0){
+        wrap.innerHTML = '<p style="font-size:12.5px; color:var(--muted-2);">Tüm mevcut ilanlar kaldırıldı.</p>';
+        return;
+      }
+      wrap.innerHTML = remaining.map(p =>
+        '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line-soft); font-size:13px;">' +
+          '<span>' + p.name + ' — ' + formatTL(p.price) + '</span>' +
+          '<button type="button" data-del-static-id="' + p.id + '" style="background:none;border:none;color:#E0736B;text-decoration:underline;cursor:pointer;font-size:12px;font-family:inherit;">Sil</button>' +
+        '</div>'
+      ).join('');
+      wrap.querySelectorAll('button[data-del-static-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!confirm('Bu ilanı sitenden kaldırmak istediğine emin misin?')) return;
+          const id = btn.dataset.delStaticId;
+          const deleted = loadDeletedStatic();
+          if (!deleted.includes(id)) deleted.push(id);
+          saveDeletedStatic(deleted);
+          const card = document.querySelector('.prod-card[data-static-id="' + id + '"]');
+          if (card) card.remove();
+          renderExistingList();
+          updateCategoryCounts();
+        });
+      });
+    }
+    applyDeletedStatic();
+
+    // ---- Kategori kartları: gerçek ürün sayısı + filtreleme ----
+    const CATEGORY_DEFS = [
+      { key: 'telefon', label: 'Telefon', test: c => /telefon/i.test(c) },
+      { key: 'sarj', label: 'Şarj Aletleri', test: c => /şarj|sarj|powerbank|adapt/i.test(c) },
+      { key: 'kulaklik', label: 'Kulaklık', test: c => /kulakl[ıi]k/i.test(c) },
+      { key: 'kilif', label: 'Kılıf & Aksesuar', test: c => /k[ıi]l[ıi]f|aksesuar|kapak|koruyucu/i.test(c) },
+      { key: 'kablo', label: 'Ek Kablolar', test: c => /kablo/i.test(c) }
+    ];
+    let activeCategoryFilter = null;
+
+    function getProductCards(){
+      return Array.from(document.querySelectorAll('.prod-grid .prod-card'));
+    }
+    function categoryTextOf(card){
+      const el = card.querySelector('.prod-cat');
+      return el ? el.textContent.trim() : '';
+    }
+    function updateCategoryCounts(){
+      const cards = getProductCards();
+      CATEGORY_DEFS.forEach(def => {
+        const count = cards.filter(card => def.test(categoryTextOf(card))).length;
+        const el = document.querySelector('#cat-' + def.key + ' small');
+        if (el) el.textContent = count > 0 ? (count + ' ürün') : 'Henüz ürün yok';
+      });
+    }
+    function applyProductFilter(){
+      const def = CATEGORY_DEFS.find(d => d.key === activeCategoryFilter);
+      getProductCards().forEach(card => {
+        card.style.display = (!def || def.test(categoryTextOf(card))) ? '' : 'none';
+      });
+    }
+    function setActiveCategoryFilter(key){
+      const def = CATEGORY_DEFS.find(d => d.key === key);
+      activeCategoryFilter = key;
+      applyProductFilter();
+      document.getElementById('urunlerBaslik').textContent = def ? def.label : 'Çok satanlar';
+      document.getElementById('resetCatFilter').style.display = def ? 'inline' : 'none';
+      document.getElementById('urunler').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    document.querySelectorAll('.cat-card[data-cat-key]').forEach(card => {
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        setActiveCategoryFilter(card.dataset.catKey);
+      });
+    });
+    document.getElementById('resetCatFilter').addEventListener('click', (e) => {
+      e.preventDefault();
+      activeCategoryFilter = null;
+      applyProductFilter();
+      document.getElementById('urunlerBaslik').textContent = 'Çok satanlar';
+      document.getElementById('resetCatFilter').style.display = 'none';
+    });
+    updateCategoryCounts();
+
+    const MAX_PRODUCT_PHOTOS = 10;
+
+    function badgeMarkup(p){
+      if (!p.badgeType) return '';
+      if (p.badgeType === 'featured') return '<span class="tag tag-featured">Öne Çıkan</span>';
+      if (p.badgeType === 'discount' && p.discountPercent) return '<span class="tag tag-discount">%' + p.discountPercent + ' İndirim</span>';
+      if (p.badgeType === 'new') return '<span class="tag tag-new">Yeni</span>';
+      if (p.badgeType === 'custom' && p.customTag) return '<span class="tag tag-custom">' + p.customTag + '</span>';
+      return '';
+    }
+    function discountedPrice(p){
+      return Math.round(p.price * (100 - p.discountPercent) / 100);
+    }
+    function priceMarkup(p){
+      if (p.badgeType === 'discount' && p.discountPercent){
+        return '<span class="price"><span class="old">' + formatTL(p.price) + '</span>' + formatTL(discountedPrice(p)) + '</span>';
+      }
+      return '<span class="price">' + formatTL(p.price) + '</span>';
+    }
+    function renderProductCard(p){
+      const prodGrid = document.querySelector('.prod-grid');
+      const card = document.createElement('div');
+      card.className = 'prod-card';
+      card.dataset.adminId = p.id;
+      const images = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+      card.dataset.images = JSON.stringify(images);
+      card.dataset.imgIndex = '0';
+      const thumbInner = images.length ? '<img src="' + images[0] + '" alt="' + p.name + '">' : '<div class="mini-phone"></div>';
+      const arrows = images.length > 1
+        ? '<span class="gallery-arrow prev">‹</span><span class="gallery-arrow next">›</span>' +
+          '<div class="gallery-dots">' + images.map((img, i) => '<span' + (i === 0 ? ' class="active"' : '') + '></span>').join('') + '</div>'
+        : '';
+      card.innerHTML =
+        '<div class="prod-thumb">' + badgeMarkup(p) + thumbInner + arrows + '</div>' +
+        '<div class="prod-info">' +
+          '<span class="prod-cat">' + p.cat + '</span>' +
+          '<span class="prod-name">' + p.name + '</span>' +
+          '<div class="prod-rating">☆☆☆☆☆ <span>(0)</span></div>' +
+          '<div class="prod-bottom">' +
+            priceMarkup(p) +
+            '<button class="add-btn">Sepete Ekle</button>' +
+          '</div>' +
+        '</div>';
+      if (images.length > 1){
+        const img = card.querySelector('.prod-thumb img');
+        const dots = card.querySelectorAll('.gallery-dots span');
+        function showImg(i){
+          const total = images.length;
+          const idx = ((i % total) + total) % total;
+          card.dataset.imgIndex = String(idx);
+          img.src = images[idx];
+          dots.forEach((d, di) => d.classList.toggle('active', di === idx));
+        }
+        card.querySelector('.gallery-arrow.prev').addEventListener('click', (e) => {
+          e.stopPropagation();
+          showImg(Number(card.dataset.imgIndex) - 1);
+        });
+        card.querySelector('.gallery-arrow.next').addEventListener('click', (e) => {
+          e.stopPropagation();
+          showImg(Number(card.dataset.imgIndex) + 1);
+        });
+      }
+      prodGrid.appendChild(card);
+      updateCategoryCounts();
+      applyProductFilter();
+    }
+    function renderAdminAddedList(){
+      const list = loadAdminProducts();
+      const wrap = document.getElementById('apAddedList');
+      if (list.length === 0){
+        wrap.innerHTML = '<p style="font-size:12.5px; color:var(--muted-2);">Henüz panelden ürün eklenmedi.</p>';
+        return;
+      }
+      wrap.innerHTML = list.map(p => {
+        const photoCount = (p.images && p.images.length) ? p.images.length : (p.image ? 1 : 0);
+        const photoNote = photoCount ? ' · ' + photoCount + ' foto' : '';
+        let badgeNote = '';
+        if (p.badgeType === 'featured') badgeNote = ' · Öne Çıkan';
+        else if (p.badgeType === 'discount' && p.discountPercent) badgeNote = ' · %' + p.discountPercent + ' İndirim';
+        else if (p.badgeType === 'new') badgeNote = ' · Yeni';
+        else if (p.badgeType === 'custom' && p.customTag) badgeNote = ' · ' + p.customTag;
+        return '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line-soft); font-size:13px;">' +
+          '<span>' + p.name + ' — ' + formatTL(p.price) + photoNote + badgeNote + '</span>' +
+          '<button type="button" data-remove-id="' + p.id + '" style="background:none;border:none;color:var(--muted-2);text-decoration:underline;cursor:pointer;font-size:12px;font-family:inherit;">Sil</button>' +
+        '</div>';
+      }).join('');
+      wrap.querySelectorAll('button[data-remove-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.removeId;
+          const remaining = loadAdminProducts().filter(p => String(p.id) !== id);
+          saveAdminProducts(remaining);
+          const card = document.querySelector('.prod-card[data-admin-id="' + id + '"]');
+          if (card) card.remove();
+          renderAdminAddedList();
+          updateCategoryCounts();
+        });
+      });
+    }
+
+    // ---- imgbb ile çoklu fotoğraf yükleme (en fazla 10) ----
+    // Ücretsiz bir API anahtarı al: https://api.imgbb.com/  (Buradaki anahtarı kendi anahtarınla değiştir)
+    const IMGBB_API_KEY = 'BURAYA_KENDI_IMGBB_API_ANAHTARINI_YAZ';
+
+    const apImageInput = document.getElementById('apImage');
+    const apImagePreviewWrap = document.getElementById('apImagePreviewWrap');
+    apImageInput.addEventListener('change', () => {
+      let files = Array.from(apImageInput.files);
+      if (files.length > MAX_PRODUCT_PHOTOS){
+        alert('En fazla ' + MAX_PRODUCT_PHOTOS + ' foto seçebilirsin. İlk ' + MAX_PRODUCT_PHOTOS + ' foto kullanılacak.');
+        const dt = new DataTransfer();
+        files.slice(0, MAX_PRODUCT_PHOTOS).forEach(f => dt.items.add(f));
+        apImageInput.files = dt.files;
+        files = Array.from(apImageInput.files);
+      }
+      apImagePreviewWrap.innerHTML = '';
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = document.createElement('img');
+          img.src = reader.result;
+          apImagePreviewWrap.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    function uploadToImgbb(file){
+      const formData = new FormData();
+      formData.append('image', file);
+      return fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_API_KEY, {
+        method: 'POST',
+        body: formData
+      }).then(res => res.json()).then(data => {
+        if (!data.success) throw new Error((data.error && data.error.message) || 'Yükleme başarısız');
+        return data.data.url;
+      });
+    }
+
+    // ---- Etiket türüne göre alanları göster/gizle ----
+    const apBadgeTypeSelect = document.getElementById('apBadgeType');
+    const apDiscountWrap = document.getElementById('apDiscountWrap');
+    const apCustomTagWrap = document.getElementById('apCustomTagWrap');
+    apBadgeTypeSelect.addEventListener('change', () => {
+      apDiscountWrap.style.display = apBadgeTypeSelect.value === 'discount' ? 'block' : 'none';
+      apCustomTagWrap.style.display = apBadgeTypeSelect.value === 'custom' ? 'block' : 'none';
+    });
+
+    const apAddBtn = document.getElementById('apAddBtn');
+    apAddBtn.addEventListener('click', () => {
+      const cat = document.getElementById('apCat').value.trim();
+      const name = document.getElementById('apName').value.trim();
+      const price = Number(document.getElementById('apPrice').value);
+      const badgeType = apBadgeTypeSelect.value;
+      const discountPercent = badgeType === 'discount' ? Number(document.getElementById('apDiscountPercent').value) : null;
+      const customTag = badgeType === 'custom' ? document.getElementById('apCustomTag').value.trim() : '';
+      const files = Array.from(apImageInput.files).slice(0, MAX_PRODUCT_PHOTOS);
+      if (!cat || !name || !price){
+        alert('Lütfen kategori, ürün adı ve fiyat alanlarını doldurun.');
+        return;
+      }
+      if (badgeType === 'discount' && (!discountPercent || discountPercent <= 0 || discountPercent >= 100)){
+        alert('Lütfen 1-99 arasında geçerli bir indirim oranı gir.');
+        return;
+      }
+      if (badgeType === 'custom' && !customTag){
+        alert('Lütfen özel etiket metnini gir.');
+        return;
+      }
+      if (files.length && IMGBB_API_KEY === 'BURAYA_KENDI_IMGBB_API_ANAHTARINI_YAZ'){
+        alert('Fotoğraf yüklemeden önce koddaki IMGBB_API_KEY değerini kendi imgbb API anahtarınla değiştirmen gerekiyor (ücretsiz: https://api.imgbb.com/).');
+        return;
+      }
+
+      function finishAdd(imageUrls){
+        const product = { id: Date.now(), cat, name, price, badgeType, discountPercent, customTag, images: imageUrls || [] };
+        const list = loadAdminProducts();
+        list.push(product);
+        saveAdminProducts(list);
+        renderProductCard(product);
+        renderAdminAddedList();
+        document.getElementById('apCat').value = '';
+        document.getElementById('apName').value = '';
+        document.getElementById('apPrice').value = '';
+        apBadgeTypeSelect.value = '';
+        document.getElementById('apDiscountPercent').value = '';
+        document.getElementById('apCustomTag').value = '';
+        apDiscountWrap.style.display = 'none';
+        apCustomTagWrap.style.display = 'none';
+        apImageInput.value = '';
+        apImagePreviewWrap.innerHTML = '';
+        setButtonBusy(apAddBtn, false, 'Yükleniyor...', 'Ürünü Ekle');
+      }
+
+      if (files.length){
+        setButtonBusy(apAddBtn, true, 'Yükleniyor...', 'Ürünü Ekle');
+        Promise.all(files.map(uploadToImgbb)).then(finishAdd).catch(err => {
+          setButtonBusy(apAddBtn, false, 'Yükleniyor...', 'Ürünü Ekle');
+          alert('Fotoğraflar yüklenemedi: ' + err.message);
+        });
+      } else {
+        finishAdd([]);
+      }
+    });
+    // Sayfa yüklendiğinde daha önce panelden eklenmiş ürünleri göster
+    loadAdminProducts().forEach(renderProductCard);
+
+    // ---- Yönetim: bakiye yükleme taleplerini onaylama/reddetme (gerçek zamanlı) ----
+    function subscribeAdminTopupRequests(){
+      db.collection('topupRequests').orderBy('createdAt', 'desc').onSnapshot(snap => {
+        const requests = [];
+        snap.forEach(doc => requests.push(Object.assign({ id: doc.id }, doc.data())));
+        renderAdminTopupList(requests);
+      }, err => {
+        document.getElementById('apTopupList').innerHTML =
+          '<p style="font-size:12.5px; color:#E0736B;">Talepler yüklenemedi: ' + err.message + '</p>';
+      });
+    }
+
+    function renderAdminTopupList(requests){
+      const wrap = document.getElementById('apTopupList');
+      if (requests.length === 0){
+        wrap.innerHTML = '<p style="font-size:12.5px; color:var(--muted-2);">Henüz bakiye yükleme talebi yok.</p>';
+        return;
+      }
+      wrap.innerHTML = requests.map(r => {
+        const statusLabel = r.status === 'approved' ? 'Onaylandı, bakiyeye eklendi' : (r.status === 'rejected' ? 'Reddedildi' : 'Onay bekliyor');
+        const statusColor = r.status === 'approved' ? '#8BC98B' : (r.status === 'rejected' ? '#E0736B' : 'var(--gold)');
+        const actions = r.status === 'pending'
+          ? '<div><button type="button" class="btn-approve" data-id="' + r.id + '">Onayla</button><button type="button" class="btn-reject" data-id="' + r.id + '">Reddet</button></div>'
+          : '';
+        return (
+          '<div class="admin-topup-row">' +
+            '<div>' +
+              '<strong>' + r.name + '</strong>' +
+              '<div style="font-size:11.5px; color:var(--muted-2);">' + r.email + '</div>' +
+              '<div style="margin-top:3px;">' + formatTL(r.amount) + ' bakiye yükleme talebi</div>' +
+            '</div>' +
+            '<div style="text-align:right;">' +
+              '<div style="font-size:11px; color:' + statusColor + '; margin-bottom:7px;">' + statusLabel + '</div>' +
+              actions +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      wrap.querySelectorAll('.btn-approve').forEach(btn => {
+        btn.addEventListener('click', () => {
+          btn.disabled = true;
+          const id = btn.dataset.id;
+          const reqRef = db.collection('topupRequests').doc(id);
+          db.runTransaction(tx => {
+            return tx.get(reqRef).then(reqSnap => {
+              if (!reqSnap.exists) throw new Error('Talep bulunamadı.');
+              const req = reqSnap.data();
+              if (req.status !== 'pending') throw new Error('Talep zaten işlenmiş.');
+              const balRef = db.collection('balances').doc(req.uid);
+              return tx.get(balRef).then(balSnap => {
+                const current = balSnap.exists ? (balSnap.data().amount || 0) : 0;
+                tx.set(balRef, { amount: current + req.amount }, { merge: true });
+                tx.update(reqRef, { status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp() });
+              });
+            });
+          }).catch(err => {
+            alert('Onaylama başarısız: ' + err.message);
+            btn.disabled = false;
+          });
+        });
+      });
+      wrap.querySelectorAll('.btn-reject').forEach(btn => {
+        btn.addEventListener('click', () => {
+          btn.disabled = true;
+          const id = btn.dataset.id;
+          db.collection('topupRequests').doc(id).update({ status: 'rejected' }).catch(err => {
+            alert('Reddetme başarısız: ' + err.message);
+            btn.disabled = false;
+          });
+        });
+      });
+    }
+
+    // ---- İletişim formu ----
+    const contactForm = document.getElementById('contactForm');
+    const formSuccess = document.getElementById('formSuccess');
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      formSuccess.classList.add('show');
+      contactForm.reset();
+    });
+  </script>
 </body>
 </html>
