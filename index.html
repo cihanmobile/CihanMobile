@@ -152,7 +152,69 @@
     border-radius:50%;
     display:flex;align-items:center;justify-content:center;
   }
+  .icon-btn.logged-in{border-color:var(--gold); color:var(--gold);}
   .menu-toggle{display:none; background:none; border:none; color:var(--text); width:38px; height:38px; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:var(--radius); flex-shrink:0; cursor:pointer;}
+
+  /* ---------- Bakiye pill (header) ---------- */
+  .balance-pill{
+    display:none;
+    align-items:center;
+    gap:7px;
+    height:38px;
+    padding:0 13px;
+    background:var(--gold-soft);
+    border:1px solid var(--gold);
+    border-radius:var(--radius);
+    color:var(--gold);
+    font-size:13px;
+    font-weight:700;
+    white-space:nowrap;
+    cursor:pointer;
+    flex-shrink:0;
+    font-family:inherit;
+  }
+  .balance-pill.show{display:flex;}
+  .balance-pill .b-label{font-weight:500; color:var(--muted); font-size:11px;}
+  .balance-pill:hover{opacity:0.88;}
+
+  /* ---------- Hesap içi bakiye kutusu ---------- */
+  .balance-box{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
+    padding:13px 15px; margin-bottom:14px;
+  }
+  .balance-box span{font-size:12.5px; color:var(--muted);}
+  .balance-box strong{font-family:'Source Serif 4',serif; font-size:18px; color:var(--gold);}
+
+  /* ---------- Bakiye yükleme modalı ---------- */
+  .topup-bank-card{
+    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
+    padding:15px; margin:4px 0 16px; display:flex; flex-direction:column; gap:11px;
+  }
+  .topup-bank-card > div{display:flex; flex-direction:column; gap:3px;}
+  .topup-bank-card span{font-size:11.5px; color:var(--muted);}
+  .topup-bank-card strong{font-size:14px; letter-spacing:0.02em;}
+  .copy-btn{
+    align-self:flex-start;
+    background:none; border:1px solid var(--gold); color:var(--gold);
+    font-size:12px; font-weight:600; padding:8px 13px; border-radius:var(--radius);
+    cursor:pointer; font-family:inherit;
+  }
+  .copy-btn:hover{background:var(--gold-soft);}
+
+  /* ---------- Yönetim: bakiye talepleri ---------- */
+  .admin-topup-row{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    padding:13px 0; border-bottom:1px solid var(--line-soft); font-size:12.5px;
+  }
+  .admin-topup-row:last-child{border-bottom:none;}
+  .admin-topup-row strong{font-size:13.5px;}
+  .btn-approve, .btn-reject{
+    font-size:11.5px; font-weight:700; padding:7px 11px; border-radius:4px;
+    cursor:pointer; font-family:inherit; border:none; margin-left:6px;
+  }
+  .btn-approve{background:#8BC98B; color:#0B2010;}
+  .btn-reject{background:#E0736B; color:#2B0906;}
 
   /* ---------- Shared overlay ---------- */
   .overlay{
@@ -941,6 +1003,9 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
           <input type="text" placeholder="Ürün, marka veya model ara">
         </div>
+        <button type="button" class="balance-pill" id="balancePill" aria-label="Bakiye yükle">
+          <span class="b-label">Bakiye</span><span id="balanceAmountText">0₺</span>
+        </button>
         <button class="icon-btn" id="accountBtn" aria-label="Hesabım">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
         </button>
@@ -986,22 +1051,111 @@
       <span>Hesabım</span>
       <button class="panel-close" data-close aria-label="Kapat">✕</button>
     </div>
-    <div class="tab-row">
-      <button class="tab-btn active" data-tab="login">Giriş Yap</button>
-      <button class="tab-btn" data-tab="register">Üye Ol</button>
+
+    <div id="accountLoggedOut">
+      <div class="tab-row">
+        <button class="tab-btn active" data-tab="login">Giriş Yap</button>
+        <button class="tab-btn" data-tab="register">Üye Ol</button>
+      </div>
+      <div class="tab-panel active" data-panel="login">
+        <div><label>E-posta</label><input type="email" id="loginEmail" placeholder="ornek@eposta.com" autocomplete="email"></div>
+        <div><label>Şifre</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="btn btn-primary" type="button" id="loginSubmit">Giriş Yap</button>
+        <p class="modal-note" id="loginError" style="display:none; color:#E0736B;"></p>
+        <p class="modal-note" id="loginResetNote" style="display:none; color:#8BC98B;"></p>
+        <p class="modal-note"><a href="#" id="forgotPasswordLink" style="text-decoration:underline;">Şifreni mi unuttun?</a></p>
+      </div>
+      <div class="tab-panel" data-panel="register">
+        <div><label>Ad Soyad</label><input type="text" id="registerName" placeholder="Adın Soyadın" autocomplete="name"></div>
+        <div><label>E-posta</label><input type="email" id="registerEmail" placeholder="ornek@eposta.com" autocomplete="email"></div>
+        <div><label>Şifre</label><input type="password" id="registerPassword" placeholder="En az 6 karakter" autocomplete="new-password"></div>
+        <button class="btn btn-primary" type="button" id="registerSubmit">Üye Ol</button>
+        <p class="modal-note" id="registerError" style="display:none; color:#E0736B;"></p>
+      </div>
     </div>
-    <div class="tab-panel active" data-panel="login">
-      <div><label>E-posta</label><input type="email" placeholder="ornek@eposta.com"></div>
-      <div><label>Şifre</label><input type="password" placeholder="••••••••"></div>
-      <button class="btn btn-primary" type="button" id="loginSubmit">Giriş Yap</button>
+
+    <div id="accountLoggedIn" style="display:none;">
+      <p style="font-size:15px; margin-bottom:4px;">Hoş geldin, <strong id="accountUserName"></strong> 👋</p>
+      <p style="font-size:12.5px; color:var(--muted); margin-bottom:16px;" id="accountUserEmail"></p>
+      <div class="balance-box">
+        <span>Bakiyen</span>
+        <strong id="accountBalanceAmount">0₺</strong>
+      </div>
+      <button class="btn btn-primary" type="button" id="openTopupBtn" style="width:100%; text-align:center; border:none; margin-bottom:10px;">Bakiye Yükle</button>
+      <button class="btn btn-primary" type="button" id="logoutBtn" style="width:100%; text-align:center; border:none;">Çıkış Yap</button>
     </div>
-    <div class="tab-panel" data-panel="register">
-      <div><label>Ad Soyad</label><input type="text" placeholder="Adın Soyadın"></div>
-      <div><label>E-posta</label><input type="email" placeholder="ornek@eposta.com"></div>
-      <div><label>Şifre</label><input type="password" placeholder="••••••••"></div>
-      <button class="btn btn-primary" type="button" id="registerSubmit">Üye Ol</button>
+
+    <p class="modal-note" id="accountModalNote">Hesabın Firebase Authentication ile güvenli şekilde oluşturulur ve saklanır.</p>
+  </div>
+
+  <!-- Bakiye yükleme modalı -->
+  <div class="modal" id="topupModal">
+    <div class="panel-head">
+      <span>Bakiye Yükle</span>
+      <button class="panel-close" data-close aria-label="Kapat">✕</button>
     </div>
-    <p class="modal-note">Bu bir vitrin şablonudur, üyelik işlemleri gerçek bir hesap oluşturmaz.</p>
+    <div class="tab-panel active">
+      <p style="font-size:12.5px; color:var(--muted); margin-bottom:2px;">Aşağıdaki hesaba havale/EFT yap, ardından yüklemek istediğin tutarı gir ve gönder. Talebin yönetim panelinde onaylandığında bakiyene otomatik olarak yansır.</p>
+      <div class="topup-bank-card">
+        <div>
+          <span>IBAN</span>
+          <strong id="topupIbanText">TR55 0015 7000 0000 0202 8357 31</strong>
+        </div>
+        <div>
+          <span>Alıcı Ad Soyad</span>
+          <strong>AHMET CİHAN KAYA</strong>
+        </div>
+        <button type="button" class="copy-btn" id="copyIbanBtn">IBAN'ı Kopyala</button>
+      </div>
+      <div>
+        <label>Yüklemek istediğin tutar (₺)</label>
+        <input type="number" id="topupAmount" min="1" step="1" placeholder="Örn: 1000">
+      </div>
+      <button class="btn btn-primary" type="button" id="topupSubmitBtn">Talebi Gönder</button>
+      <p class="modal-note" id="topupError" style="display:none; color:#E0736B;"></p>
+      <p class="modal-note" id="topupSuccess" style="display:none; color:#8BC98B;"></p>
+    </div>
+    <p class="modal-note">Not: Talep gönderdikten sonra bakiyen, yönetim panelinden onaylanana kadar güncellenmez.</p>
+  </div>
+
+  <!-- Yönetim girişi modalı -->
+  <div class="modal" id="adminLoginModal">
+    <div class="panel-head">
+      <span>Yönetim Girişi</span>
+      <button class="panel-close" data-close aria-label="Kapat">✕</button>
+    </div>
+    <div class="tab-panel active">
+      <div><label>E-posta</label><input type="email" id="adminEmail" placeholder="ornek@eposta.com"></div>
+      <div><label>Şifre</label><input type="password" id="adminPassword" placeholder="••••••••"></div>
+      <button class="btn btn-primary" type="button" id="adminLoginSubmit">Giriş Yap</button>
+    </div>
+    <p class="modal-note" id="adminLoginError" style="display:none; color:#E0736B;">E-posta veya şifre hatalı.</p>
+  </div>
+
+  <!-- Yönetim paneli -->
+  <div class="drawer" id="adminPanel">
+    <div class="panel-head">
+      <span>Yönetim Paneli — İlan Ekle</span>
+      <button class="panel-close" data-close aria-label="Kapat">✕</button>
+    </div>
+    <div style="overflow-y:auto; flex:1;">
+      <div class="tab-panel active" style="margin-bottom:22px;">
+        <div><label>Kategori</label><input type="text" id="apCat" placeholder="Örn: Akıllı Telefon"></div>
+        <div><label>Ürün Adı</label><input type="text" id="apName" placeholder="Örn: Orbit S9"></div>
+        <div><label>Fiyat (₺)</label><input type="number" id="apPrice" placeholder="Örn: 9990"></div>
+        <div><label>Etiket (opsiyonel)</label><input type="text" id="apTag" placeholder="Örn: Yeni"></div>
+        <button class="btn btn-primary" type="button" id="apAddBtn">Ürünü Ekle</button>
+      </div>
+      <div style="border-top:1px solid var(--line); padding-top:16px;">
+        <p style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">Panelden eklenen ilanlar</p>
+        <div id="apAddedList"></div>
+      </div>
+      <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:22px;">
+        <p style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">Bakiye yükleme talepleri</p>
+        <div id="apTopupList"></div>
+      </div>
+    </div>
+    <p class="modal-note">Not: Eklenen ilanlar ve bakiye talepleri yalnızca bu tarayıcıda (yerel depolama) saklanır; gerçek bir sunucu/veritabanına bağlı değildir.</p>
   </div>
 
   <!-- Sepet çekmecesi -->
@@ -1023,6 +1177,26 @@
     </div>
   </div>
 
+  <!-- Firebase SDK (compat sürüm — modül derleyicisi olmadan doğrudan tarayıcıda çalışır) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+  <script>
+    // ---- Firebase başlatma ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1p7vN0rlcKg_1QbK3isUCtnyqMRbO9tI",
+      authDomain: "cihanmobile-2fa5f.firebaseapp.com",
+      projectId: "cihanmobile-2fa5f",
+      storageBucket: "cihanmobile-2fa5f.firebasestorage.app",
+      messagingSenderId: "391883180883",
+      appId: "1:391883180883:web:58014c9da5889e54a9efa6",
+      measurementId: "G-GGCFT0E0Y1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+  </script>
   <script>
     // ---- Ortak panel yönetimi ----
     const overlay = document.getElementById('overlay');
@@ -1032,7 +1206,10 @@
     const accountModal = document.getElementById('accountModal');
     const cartBtn = document.getElementById('cartBtn');
     const cartDrawer = document.getElementById('cartDrawer');
-    const allPanels = [mobileNavPanel, accountModal, cartDrawer];
+    const adminLoginModal = document.getElementById('adminLoginModal');
+    const adminPanel = document.getElementById('adminPanel');
+    const topupModal = document.getElementById('topupModal');
+    const allPanels = [mobileNavPanel, accountModal, cartDrawer, adminLoginModal, adminPanel, topupModal];
 
     function closeAllPanels(){
       allPanels.forEach(p => p.classList.remove('open'));
@@ -1052,6 +1229,8 @@
     });
     accountBtn.addEventListener('click', () => openPanel(accountModal));
     cartBtn.addEventListener('click', () => { renderCart(); openPanel(cartDrawer); });
+    document.getElementById('balancePill').addEventListener('click', () => openPanel(topupModal));
+    document.getElementById('openTopupBtn').addEventListener('click', () => openPanel(topupModal));
 
     overlay.addEventListener('click', closeAllPanels);
     document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', closeAllPanels));
@@ -1067,8 +1246,204 @@
         document.querySelector('.tab-panel[data-panel="' + tab.dataset.tab + '"]').classList.add('active');
       });
     });
-    document.getElementById('loginSubmit').addEventListener('click', () => alert('Bu bir vitrin şablonudur — giriş işlemi bu demoda aktif değildir.'));
-    document.getElementById('registerSubmit').addEventListener('click', () => alert('Bu bir vitrin şablonudur — üyelik kaydı bu demoda aktif değildir.'));
+    // ---- Gerçek kayıt / giriş sistemi (Firebase Authentication) ----
+    function firebaseErrorMessage(code){
+      switch(code){
+        case 'auth/email-already-in-use': return 'Bu e-posta adresiyle zaten bir hesap var. Giriş yapmayı dener misin?';
+        case 'auth/invalid-email': return 'Lütfen geçerli bir e-posta adresi gir.';
+        case 'auth/weak-password': return 'Şifre en az 6 karakter olmalı.';
+        case 'auth/missing-password': return 'Lütfen bir şifre gir.';
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          return 'E-posta veya şifre hatalı.';
+        case 'auth/too-many-requests':
+          return 'Çok fazla başarısız deneme oldu. Lütfen biraz sonra tekrar dene.';
+        case 'auth/network-request-failed':
+          return 'Bağlantı hatası. İnternet bağlantını kontrol et.';
+        case 'auth/operation-not-allowed':
+          return 'E-posta/Şifre girişi Firebase Console\'da henüz açılmamış (Authentication > Sign-in method).';
+        case 'auth/unauthorized-domain':
+          return 'Bu site adresi Firebase\'de yetkili domain listesinde değil (Authentication > Settings > Authorized domains).';
+        case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
+        case 'auth/invalid-api-key':
+          return 'Firebase API anahtarı geçersiz veya kısıtlanmış.';
+        default:
+          return 'Bir şeyler ters gitti (' + (code || 'bilinmeyen hata') + '). Lütfen tekrar dene.';
+      }
+    }
+    function setFieldError(id, msg){
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = msg || '';
+      el.style.display = msg ? 'block' : 'none';
+    }
+    function setButtonBusy(btn, busy, busyText, idleText){
+      btn.disabled = busy;
+      btn.textContent = busy ? busyText : idleText;
+      btn.style.opacity = busy ? '0.7' : '1';
+    }
+
+    const loginSubmitBtn = document.getElementById('loginSubmit');
+    const registerSubmitBtn = document.getElementById('registerSubmit');
+
+    loginSubmitBtn.addEventListener('click', () => {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      setFieldError('loginError', '');
+      setFieldError('loginResetNote', '');
+      if (!email || !password){
+        setFieldError('loginError', 'Lütfen e-posta ve şifreni gir.');
+        return;
+      }
+      setButtonBusy(loginSubmitBtn, true, 'Giriş yapılıyor...', 'Giriş Yap');
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          document.getElementById('loginEmail').value = '';
+          document.getElementById('loginPassword').value = '';
+          closeAllPanels();
+        })
+        .catch(err => { console.error('Firebase login error:', err); setFieldError('loginError', firebaseErrorMessage(err.code)); })
+        .finally(() => setButtonBusy(loginSubmitBtn, false, 'Giriş yapılıyor...', 'Giriş Yap'));
+    });
+
+    registerSubmitBtn.addEventListener('click', () => {
+      const name = document.getElementById('registerName').value.trim();
+      const email = document.getElementById('registerEmail').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      setFieldError('registerError', '');
+      if (!name || !email || !password){
+        setFieldError('registerError', 'Lütfen tüm alanları doldur.');
+        return;
+      }
+      if (password.length < 6){
+        setFieldError('registerError', 'Şifre en az 6 karakter olmalı.');
+        return;
+      }
+      setButtonBusy(registerSubmitBtn, true, 'Hesap oluşturuluyor...', 'Üye Ol');
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(cred => cred.user.updateProfile({ displayName: name }))
+        .then(() => {
+          document.getElementById('registerName').value = '';
+          document.getElementById('registerEmail').value = '';
+          document.getElementById('registerPassword').value = '';
+          closeAllPanels();
+        })
+        .catch(err => { console.error('Firebase register error:', err); setFieldError('registerError', firebaseErrorMessage(err.code)); })
+        .finally(() => setButtonBusy(registerSubmitBtn, false, 'Hesap oluşturuluyor...', 'Üye Ol'));
+    });
+
+    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      setFieldError('loginError', '');
+      setFieldError('loginResetNote', '');
+      if (!email){
+        setFieldError('loginError', 'Şifre sıfırlama bağlantısı göndermek için önce e-posta adresini gir.');
+        return;
+      }
+      auth.sendPasswordResetEmail(email)
+        .then(() => setFieldError('loginResetNote', 'Şifre sıfırlama bağlantısı e-postana gönderildi.'))
+        .catch(err => { console.error('Firebase login error:', err); setFieldError('loginError', firebaseErrorMessage(err.code)); });
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      auth.signOut();
+      closeAllPanels();
+    });
+
+    let currentUser = null;
+    let unsubscribeBalance = null;
+
+    auth.onAuthStateChanged(user => {
+      currentUser = user;
+      const loggedOutView = document.getElementById('accountLoggedOut');
+      const loggedInView = document.getElementById('accountLoggedIn');
+      if (user){
+        loggedOutView.style.display = 'none';
+        loggedInView.style.display = 'block';
+        document.getElementById('accountUserName').textContent = user.displayName || 'Üye';
+        document.getElementById('accountUserEmail').textContent = user.email || '';
+        accountBtn.classList.add('logged-in');
+        subscribeUserBalance(user.uid);
+      } else {
+        loggedOutView.style.display = 'block';
+        loggedInView.style.display = 'none';
+        accountBtn.classList.remove('logged-in');
+        if (unsubscribeBalance){ unsubscribeBalance(); unsubscribeBalance = null; }
+        updateBalanceUI(0);
+      }
+    });
+
+    // ---- Bakiye yükleme sistemi (Firestore — çok kullanıcılı, gerçek zamanlı) ----
+    const BANK_IBAN = 'TR55 0015 7000 0000 0202 8357 31';
+
+    function subscribeUserBalance(uid){
+      if (unsubscribeBalance){ unsubscribeBalance(); }
+      unsubscribeBalance = db.collection('balances').doc(uid).onSnapshot(snap => {
+        const amount = snap.exists ? (snap.data().amount || 0) : 0;
+        updateBalanceUI(amount);
+      }, () => updateBalanceUI(0));
+    }
+
+    function updateBalanceUI(amount){
+      const pill = document.getElementById('balancePill');
+      const amountText = document.getElementById('balanceAmountText');
+      const accBalanceEl = document.getElementById('accountBalanceAmount');
+      if (currentUser){
+        pill.classList.add('show');
+        amountText.textContent = formatTL(amount);
+        if (accBalanceEl) accBalanceEl.textContent = formatTL(amount);
+      } else {
+        pill.classList.remove('show');
+      }
+    }
+
+    document.getElementById('copyIbanBtn').addEventListener('click', () => {
+      const btn = document.getElementById('copyIbanBtn');
+      const finish = (ok) => {
+        const old = 'IBAN\'ı Kopyala';
+        btn.textContent = ok ? 'Kopyalandı ✓' : 'Kopyalanamadı';
+        setTimeout(() => btn.textContent = old, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(BANK_IBAN).then(() => finish(true)).catch(() => finish(false));
+      } else {
+        finish(false);
+      }
+    });
+
+    const topupSubmitBtn = document.getElementById('topupSubmitBtn');
+    topupSubmitBtn.addEventListener('click', () => {
+      setFieldError('topupError', '');
+      setFieldError('topupSuccess', '');
+      if (!currentUser){
+        setFieldError('topupError', 'Talep gönderebilmek için önce giriş yapmalısın.');
+        return;
+      }
+      const amountInput = document.getElementById('topupAmount');
+      const amount = Number(amountInput.value);
+      if (!amount || amount <= 0){
+        setFieldError('topupError', 'Lütfen geçerli bir tutar gir.');
+        return;
+      }
+      setButtonBusy(topupSubmitBtn, true, 'Gönderiliyor...', 'Talebi Gönder');
+      db.collection('topupRequests').add({
+        uid: currentUser.uid,
+        name: currentUser.displayName || 'Üye',
+        email: currentUser.email || '',
+        amount: amount,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        amountInput.value = '';
+        setFieldError('topupSuccess', 'Talebin alındı. Yönetim onayladığında bakiyene yansıyacak.');
+      }).catch(() => {
+        setFieldError('topupError', 'Talep gönderilemedi, lütfen tekrar dene.');
+      }).finally(() => {
+        setButtonBusy(topupSubmitBtn, false, 'Gönderiliyor...', 'Talebi Gönder');
+      });
+    });
 
     // ---- Sepet ----
     const FREE_SHIPPING_LIMIT = 750;
@@ -1146,6 +1521,198 @@
     document.getElementById('checkoutBtn').addEventListener('click', () => alert('Bu bir vitrin şablonudur — ödeme adımı bu demoda aktif değildir.'));
 
     renderCart();
+
+    // ---- Yönetim girişi & panel ----
+    const ADMIN_EMAIL = 'cihanmobile@gmail.com';
+    const adminLoginLink = document.getElementById('adminLoginLink');
+    const adminLoginError = document.getElementById('adminLoginError');
+    let adminTopupSubscribed = false;
+
+    adminLoginLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      adminLoginError.style.display = 'none';
+      openPanel(adminLoginModal);
+    });
+
+    document.getElementById('adminLoginSubmit').addEventListener('click', () => {
+      const email = document.getElementById('adminEmail').value.trim();
+      const pass = document.getElementById('adminPassword').value;
+      const btn = document.getElementById('adminLoginSubmit');
+      adminLoginError.style.display = 'none';
+      if (!email || !pass){
+        adminLoginError.textContent = 'E-posta ve şifre gerekli.';
+        adminLoginError.style.display = 'block';
+        return;
+      }
+      setButtonBusy(btn, true, 'Giriş yapılıyor...', 'Giriş Yap');
+      auth.signInWithEmailAndPassword(email, pass).then(cred => {
+        setButtonBusy(btn, false, 'Giriş yapılıyor...', 'Giriş Yap');
+        if (cred.user.email !== ADMIN_EMAIL){
+          auth.signOut();
+          adminLoginError.textContent = 'Bu hesabın yönetim yetkisi yok.';
+          adminLoginError.style.display = 'block';
+          return;
+        }
+        document.getElementById('adminEmail').value = '';
+        document.getElementById('adminPassword').value = '';
+        renderAdminAddedList();
+        if (!adminTopupSubscribed){
+          adminTopupSubscribed = true;
+          subscribeAdminTopupRequests();
+        }
+        openPanel(adminPanel);
+      }).catch(() => {
+        setButtonBusy(btn, false, 'Giriş yapılıyor...', 'Giriş Yap');
+        adminLoginError.textContent = 'E-posta veya şifre hatalı.';
+        adminLoginError.style.display = 'block';
+      });
+    });
+
+    function loadAdminProducts(){
+      try { return JSON.parse(localStorage.getItem('cmg_admin_products') || '[]'); }
+      catch(e){ return []; }
+    }
+    function saveAdminProducts(list){
+      localStorage.setItem('cmg_admin_products', JSON.stringify(list));
+    }
+    function renderProductCard(p){
+      const prodGrid = document.querySelector('.prod-grid');
+      const card = document.createElement('div');
+      card.className = 'prod-card';
+      card.dataset.adminId = p.id;
+      card.innerHTML =
+        '<div class="prod-thumb">' + (p.tag ? '<span class="tag">' + p.tag + '</span>' : '') + '<div class="mini-phone"></div></div>' +
+        '<div class="prod-info">' +
+          '<span class="prod-cat">' + p.cat + '</span>' +
+          '<span class="prod-name">' + p.name + '</span>' +
+          '<div class="prod-rating">☆☆☆☆☆ <span>(0)</span></div>' +
+          '<div class="prod-bottom">' +
+            '<span class="price">' + formatTL(p.price) + '</span>' +
+            '<button class="add-btn">Sepete Ekle</button>' +
+          '</div>' +
+        '</div>';
+      prodGrid.appendChild(card);
+    }
+    function renderAdminAddedList(){
+      const list = loadAdminProducts();
+      const wrap = document.getElementById('apAddedList');
+      if (list.length === 0){
+        wrap.innerHTML = '<p style="font-size:12.5px; color:var(--muted-2);">Henüz panelden ürün eklenmedi.</p>';
+        return;
+      }
+      wrap.innerHTML = list.map(p =>
+        '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line-soft); font-size:13px;">' +
+          '<span>' + p.name + ' — ' + formatTL(p.price) + '</span>' +
+          '<button type="button" data-remove-id="' + p.id + '" style="background:none;border:none;color:var(--muted-2);text-decoration:underline;cursor:pointer;font-size:12px;font-family:inherit;">Sil</button>' +
+        '</div>'
+      ).join('');
+      wrap.querySelectorAll('button[data-remove-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.removeId;
+          const remaining = loadAdminProducts().filter(p => String(p.id) !== id);
+          saveAdminProducts(remaining);
+          const card = document.querySelector('.prod-card[data-admin-id="' + id + '"]');
+          if (card) card.remove();
+          renderAdminAddedList();
+        });
+      });
+    }
+    document.getElementById('apAddBtn').addEventListener('click', () => {
+      const cat = document.getElementById('apCat').value.trim();
+      const name = document.getElementById('apName').value.trim();
+      const price = Number(document.getElementById('apPrice').value);
+      const tag = document.getElementById('apTag').value.trim();
+      if (!cat || !name || !price){
+        alert('Lütfen kategori, ürün adı ve fiyat alanlarını doldurun.');
+        return;
+      }
+      const product = { id: Date.now(), cat, name, price, tag };
+      const list = loadAdminProducts();
+      list.push(product);
+      saveAdminProducts(list);
+      renderProductCard(product);
+      renderAdminAddedList();
+      document.getElementById('apCat').value = '';
+      document.getElementById('apName').value = '';
+      document.getElementById('apPrice').value = '';
+      document.getElementById('apTag').value = '';
+    });
+    // Sayfa yüklendiğinde daha önce panelden eklenmiş ürünleri göster
+    loadAdminProducts().forEach(renderProductCard);
+
+    // ---- Yönetim: bakiye yükleme taleplerini onaylama/reddetme (gerçek zamanlı) ----
+    function subscribeAdminTopupRequests(){
+      db.collection('topupRequests').orderBy('createdAt', 'desc').onSnapshot(snap => {
+        const requests = [];
+        snap.forEach(doc => requests.push(Object.assign({ id: doc.id }, doc.data())));
+        renderAdminTopupList(requests);
+      }, err => {
+        document.getElementById('apTopupList').innerHTML =
+          '<p style="font-size:12.5px; color:#E0736B;">Talepler yüklenemedi: ' + err.message + '</p>';
+      });
+    }
+
+    function renderAdminTopupList(requests){
+      const wrap = document.getElementById('apTopupList');
+      if (requests.length === 0){
+        wrap.innerHTML = '<p style="font-size:12.5px; color:var(--muted-2);">Henüz bakiye yükleme talebi yok.</p>';
+        return;
+      }
+      wrap.innerHTML = requests.map(r => {
+        const statusLabel = r.status === 'approved' ? 'Onaylandı, bakiyeye eklendi' : (r.status === 'rejected' ? 'Reddedildi' : 'Onay bekliyor');
+        const statusColor = r.status === 'approved' ? '#8BC98B' : (r.status === 'rejected' ? '#E0736B' : 'var(--gold)');
+        const actions = r.status === 'pending'
+          ? '<div><button type="button" class="btn-approve" data-id="' + r.id + '">Onayla</button><button type="button" class="btn-reject" data-id="' + r.id + '">Reddet</button></div>'
+          : '';
+        return (
+          '<div class="admin-topup-row">' +
+            '<div>' +
+              '<strong>' + r.name + '</strong>' +
+              '<div style="font-size:11.5px; color:var(--muted-2);">' + r.email + '</div>' +
+              '<div style="margin-top:3px;">' + formatTL(r.amount) + ' bakiye yükleme talebi</div>' +
+            '</div>' +
+            '<div style="text-align:right;">' +
+              '<div style="font-size:11px; color:' + statusColor + '; margin-bottom:7px;">' + statusLabel + '</div>' +
+              actions +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      wrap.querySelectorAll('.btn-approve').forEach(btn => {
+        btn.addEventListener('click', () => {
+          btn.disabled = true;
+          const id = btn.dataset.id;
+          const reqRef = db.collection('topupRequests').doc(id);
+          db.runTransaction(tx => {
+            return tx.get(reqRef).then(reqSnap => {
+              if (!reqSnap.exists) throw new Error('Talep bulunamadı.');
+              const req = reqSnap.data();
+              if (req.status !== 'pending') throw new Error('Talep zaten işlenmiş.');
+              const balRef = db.collection('balances').doc(req.uid);
+              return tx.get(balRef).then(balSnap => {
+                const current = balSnap.exists ? (balSnap.data().amount || 0) : 0;
+                tx.set(balRef, { amount: current + req.amount }, { merge: true });
+                tx.update(reqRef, { status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp() });
+              });
+            });
+          }).catch(err => {
+            alert('Onaylama başarısız: ' + err.message);
+            btn.disabled = false;
+          });
+        });
+      });
+      wrap.querySelectorAll('.btn-reject').forEach(btn => {
+        btn.addEventListener('click', () => {
+          btn.disabled = true;
+          const id = btn.dataset.id;
+          db.collection('topupRequests').doc(id).update({ status: 'rejected' }).catch(err => {
+            alert('Reddetme başarısız: ' + err.message);
+            btn.disabled = false;
+          });
+        });
+      });
+    }
 
     // ---- İletişim formu ----
     const contactForm = document.getElementById('contactForm');
@@ -1540,6 +2107,9 @@
       <div class="footer-bottom">
         <span>© 2026 Cihan Mobile Group. Tüm hakları saklıdır.</span>
         <span>750 TL üzeri kargo ücretsiz · Aynı gün kargo · 2 yıl garanti</span>
+      </div>
+      <div style="text-align:center; padding-top:12px;">
+        <a href="#" id="adminLoginLink" style="font-size:11px; color:var(--muted-2);">Yönetim Girişi</a>
       </div>
     </div>
   </footer>
