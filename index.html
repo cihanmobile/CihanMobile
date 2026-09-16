@@ -216,6 +216,48 @@
   .btn-approve{background:#8BC98B; color:#0B2010;}
   .btn-reject{background:#E0736B; color:#2B0906;}
 
+  /* ---------- Yönetim paneli: profesyonel dashboard ---------- */
+  #adminPanel{width:560px;}
+  .ap-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;}
+  .ap-stat-card{background:var(--bg); border:1px solid var(--line); border-radius:var(--radius); padding:14px 10px; text-align:center;}
+  .ap-stat-card .ap-stat-num{font-family:'Source Serif 4',serif; font-size:24px; color:var(--gold); display:block; margin-bottom:3px; line-height:1;}
+  .ap-stat-card .ap-stat-label{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+  .ap-tab-row{display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:20px; flex-wrap:wrap;}
+  .ap-tab-btn{flex:1; min-width:110px; text-align:center; padding:10px 4px; font-size:12.5px; font-weight:600; color:var(--muted); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px;}
+  .ap-tab-btn.active{color:var(--text); border-color:var(--gold);}
+  .ap-tab-btn .ap-badge{background:var(--gold); color:#1B1405; font-size:10px; font-weight:700; border-radius:50%; min-width:16px; height:16px; padding:0 4px; display:inline-flex; align-items:center; justify-content:center;}
+  .ap-tab-panel{display:none; flex-direction:column; gap:12px;}
+  .ap-tab-panel.active{display:flex;}
+  .ap-tab-panel label{font-size:12.5px; color:var(--muted); margin-bottom:5px; display:block;}
+  .ap-tab-panel input, .ap-tab-panel select{
+    width:100%; background:var(--bg); border:1px solid var(--line); border-radius:4px;
+    padding:11px 13px; color:var(--text); font-size:13.5px; font-family:inherit;
+  }
+  .ap-tab-panel input:focus, .ap-tab-panel select:focus{outline:none; border-color:var(--gold);}
+  .ap-section-title{font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+  .ap-msg-row{padding:13px 12px; border:1px solid var(--line-soft); border-radius:var(--radius); margin-bottom:8px; background:var(--bg);}
+  .ap-msg-row.unread{border-color:var(--gold);}
+  .ap-msg-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:4px;}
+  .ap-msg-top strong{font-size:13.5px;}
+  .ap-msg-meta{font-size:11px; color:var(--muted-2);}
+  .ap-msg-text{font-size:12.5px; color:var(--muted); line-height:1.6; margin:6px 0 8px; white-space:pre-wrap;}
+  .ap-msg-actions{display:flex; gap:8px; flex-wrap:wrap;}
+  .ap-msg-actions a, .ap-msg-actions button{font-size:11.5px; font-weight:600; padding:7px 11px; border-radius:4px; cursor:pointer; font-family:inherit; border:1px solid var(--line); background:none; color:var(--text); text-decoration:none; display:inline-block;}
+  .ap-msg-actions .ap-read-btn{border-color:var(--gold); color:var(--gold);}
+  .ap-msg-actions .ap-del-btn{border-color:#E0736B; color:#E0736B;}
+  .ap-unread-dot{width:7px; height:7px; border-radius:50%; background:var(--gold); display:inline-block; margin-right:6px;}
+  .ap-prod-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line-soft); font-size:13px;}
+  .ap-prod-row:last-child{border-bottom:none;}
+  .ap-prod-thumb{width:38px; height:38px; border-radius:4px; background:var(--panel-2); border:1px solid var(--line); flex-shrink:0; overflow:hidden;}
+  .ap-prod-thumb img{width:100%; height:100%; object-fit:cover;}
+  .ap-prod-info{flex:1; min-width:0;}
+  .ap-prod-info strong{display:block; font-size:13px; margin-bottom:2px;}
+  .ap-prod-info span{color:var(--muted); font-size:11.5px;}
+  .ap-prod-actions{display:flex; gap:12px; flex-shrink:0;}
+  .ap-prod-actions button{background:none; border:none; cursor:pointer; font-size:12px; font-family:inherit; text-decoration:underline; padding:0;}
+  .ap-edit-link{color:var(--gold);}
+  .ap-del-link{color:var(--muted-2);}
+
   /* ---------- Shared overlay ---------- */
   .overlay{
     position:fixed; inset:0;
@@ -1206,11 +1248,25 @@
   <!-- Yönetim paneli -->
   <div class="drawer" id="adminPanel">
     <div class="panel-head">
-      <span>Yönetim Paneli — İlan Ekle</span>
+      <span>Yönetim Paneli</span>
       <button class="panel-close" data-close aria-label="Kapat">✕</button>
     </div>
     <div style="overflow-y:auto; flex:1;">
-      <div class="tab-panel active" style="margin-bottom:22px;">
+      <div class="ap-stats">
+        <div class="ap-stat-card"><span class="ap-stat-num" id="apStatProducts">0</span><span class="ap-stat-label">Ürün</span></div>
+        <div class="ap-stat-card"><span class="ap-stat-num" id="apStatMessages">0</span><span class="ap-stat-label">Okunmamış Mesaj</span></div>
+        <div class="ap-stat-card"><span class="ap-stat-num" id="apStatTopups">0</span><span class="ap-stat-label">Bekleyen Talep</span></div>
+      </div>
+
+      <div class="ap-tab-row">
+        <button type="button" class="ap-tab-btn active" data-ap-tab="products">Ürünler</button>
+        <button type="button" class="ap-tab-btn" data-ap-tab="messages">Mesajlar <span class="ap-badge" id="apMsgBadge" style="display:none;">0</span></button>
+        <button type="button" class="ap-tab-btn" data-ap-tab="topups">Bakiye Talepleri</button>
+        <button type="button" class="ap-tab-btn" data-ap-tab="existing">Mevcut İlanlar</button>
+      </div>
+
+      <div class="ap-tab-panel active" data-ap-panel="products">
+        <p class="ap-section-title" id="apFormTitle">Yeni Ürün Ekle</p>
         <div><label>Kategori</label>
           <select id="apCat">
             <option value="">Kategori seç</option>
@@ -1247,24 +1303,33 @@
           <label>Ürün Fotoğrafları (en fazla 10, opsiyonel)</label>
           <input type="file" id="apImage" accept="image/*" multiple>
           <div id="apImagePreviewWrap" class="ap-img-preview-wrap"></div>
-          <p class="ap-upload-note" id="apUploadNote">Fotoğraf seçersen ürün eklerken otomatik olarak imgbb'ye yüklenir. En fazla 10 foto seçebilirsin.</p>
+          <p class="ap-upload-note" id="apUploadNote">Düzenlerken yeni foto seçmezsen mevcut fotoğraflar korunur. Foto seçersen ürün kaydedilirken otomatik olarak imgbb'ye yüklenir (en fazla 10).</p>
         </div>
         <button class="btn btn-primary" type="button" id="apAddBtn">Ürünü Ekle</button>
+        <button class="btn btn-ghost" type="button" id="apCancelEditBtn" style="display:none;">Düzenlemeyi İptal Et</button>
+
+        <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:6px;">
+          <p class="ap-section-title" style="margin-bottom:10px;">Panelden Eklenen Ürünler</p>
+          <div id="apAddedList"></div>
+        </div>
       </div>
-      <div style="border-top:1px solid var(--line); padding-top:16px;">
-        <p style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">Panelden eklenen ilanlar</p>
-        <div id="apAddedList"></div>
+
+      <div class="ap-tab-panel" data-ap-panel="messages">
+        <p class="ap-section-title" style="margin-bottom:2px;">Bize Ulaşın Formundan Gelen Mesajlar</p>
+        <div id="apMessagesList"></div>
       </div>
-      <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:22px;">
-        <p style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">Sitede zaten var olan ilanlar</p>
-        <div id="apExistingList"></div>
-      </div>
-      <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:22px;">
-        <p style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">Bakiye yükleme talepleri</p>
+
+      <div class="ap-tab-panel" data-ap-panel="topups">
+        <p class="ap-section-title" style="margin-bottom:2px;">Bakiye Yükleme Talepleri</p>
         <div id="apTopupList"></div>
       </div>
+
+      <div class="ap-tab-panel" data-ap-panel="existing">
+        <p class="ap-section-title" style="margin-bottom:2px;">Sitede Zaten Var Olan İlanlar</p>
+        <div id="apExistingList"></div>
+      </div>
     </div>
-    <p class="modal-note">Not: Eklenen/silinen ilanlar ve bakiye talepleri yalnızca bu tarayıcıda (yerel depolama) saklanır; gerçek bir sunucu/veritabanına bağlı değildir.</p>
+    <p class="modal-note">Ürünler ve iletişim mesajları Firebase veritabanında saklanır; tüm cihazlarda gerçek zamanlı görüntülenir.</p>
   </div>
 
   <!-- Sepet çekmecesi -->
@@ -1636,20 +1701,21 @@
         <form class="contact-form" id="contactForm">
           <div>
             <label>Ad Soyad</label>
-            <input type="text" required placeholder="Adın Soyadın">
+            <input type="text" id="contactName" required placeholder="Adın Soyadın">
           </div>
           <div>
             <label>E-posta</label>
-            <input type="email" required placeholder="ornek@eposta.com">
+            <input type="email" id="contactEmail" required placeholder="ornek@eposta.com">
           </div>
           <div>
             <label>Telefon</label>
-            <input type="tel" placeholder="05xx xxx xx xx">
+            <input type="tel" id="contactPhone" placeholder="05xx xxx xx xx">
           </div>
           <div>
             <label>Mesajın</label>
-            <textarea required placeholder="Nasıl yardımcı olabiliriz?"></textarea>
+            <textarea id="contactMessage" required placeholder="Nasıl yardımcı olabiliriz?"></textarea>
           </div>
+          <p class="modal-note" id="contactError" style="display:none; color:#E0736B; text-align:left; margin-top:0;"></p>
           <button type="submit" class="btn btn-primary" style="border:none; align-self:flex-start;">Mesajı Gönder</button>
           <div class="form-success" id="formSuccess">Mesajın alındı, en kısa sürede seninle iletişime geçeceğiz.</div>
         </form>
@@ -1781,6 +1847,20 @@
         document.querySelector('.tab-panel[data-panel="' + tab.dataset.tab + '"]').classList.add('active');
       });
     });
+
+    // ---- Yönetim paneli sekmeleri ----
+    function switchApTab(tab){
+      document.querySelectorAll('.ap-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.apTab === tab));
+      document.querySelectorAll('.ap-tab-panel').forEach(p => p.classList.toggle('active', p.dataset.apPanel === tab));
+    }
+    document.querySelectorAll('.ap-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchApTab(btn.dataset.apTab));
+    });
+    function escapeHtml(str){
+      return String(str == null ? '' : str).replace(/[&<>"']/g, ch => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+      }[ch]));
+    }
     // ---- Gerçek kayıt / giriş sistemi (Firebase Authentication) ----
     function firebaseErrorMessage(code){
       switch(code){
@@ -2253,6 +2333,7 @@
     const adminLoginLink = document.getElementById('adminLoginLink');
     const adminLoginError = document.getElementById('adminLoginError');
     let adminTopupSubscribed = false;
+    let adminMessagesSubscribed = false;
 
     adminLoginLink.addEventListener('click', (e) => {
       e.preventDefault();
@@ -2281,11 +2362,15 @@
         }
         document.getElementById('adminEmail').value = '';
         document.getElementById('adminPassword').value = '';
-        renderAdminAddedList();
+        renderAdminAddedList(apProductsCache);
         renderExistingList();
         if (!adminTopupSubscribed){
           adminTopupSubscribed = true;
           subscribeAdminTopupRequests();
+        }
+        if (!adminMessagesSubscribed){
+          adminMessagesSubscribed = true;
+          subscribeAdminMessages();
         }
         openPanel(adminPanel);
       }).catch(() => {
@@ -2295,13 +2380,69 @@
       });
     });
 
-    function loadAdminProducts(){
-      try { return JSON.parse(localStorage.getItem('cmg_admin_products') || '[]'); }
-      catch(e){ return []; }
+    // ---- Yönetim: ürünler artık Firebase Firestore'da saklanır (gerçek zamanlı, tüm cihazlarda) ----
+    let apProductsCache = [];
+    let apEditingId = null;
+    function subscribeProducts(){
+      db.collection('products').orderBy('createdAt', 'desc').onSnapshot(snap => {
+        snap.docChanges().forEach(change => {
+          const p = Object.assign({ id: change.doc.id }, change.doc.data());
+          const existingCard = document.querySelector('.prod-card[data-admin-id="' + p.id + '"]');
+          if (change.type === 'removed'){
+            if (existingCard) existingCard.remove();
+          } else {
+            if (existingCard) existingCard.remove();
+            renderProductCard(p);
+          }
+        });
+        apProductsCache = [];
+        snap.forEach(doc => apProductsCache.push(Object.assign({ id: doc.id }, doc.data())));
+        const statProducts = document.getElementById('apStatProducts');
+        if (statProducts) statProducts.textContent = apProductsCache.length;
+        renderAdminAddedList(apProductsCache);
+        updateCategoryCounts();
+        applyProductFilter();
+      }, err => {
+        const wrap = document.getElementById('apAddedList');
+        if (wrap) wrap.innerHTML = '<p style="font-size:12.5px; color:#E0736B;">Ürünler yüklenemedi: ' + err.message + '</p>';
+      });
     }
-    function saveAdminProducts(list){
-      localStorage.setItem('cmg_admin_products', JSON.stringify(list));
+    function resetProductForm(){
+      apEditingId = null;
+      document.getElementById('apFormTitle').textContent = 'Yeni Ürün Ekle';
+      document.getElementById('apCancelEditBtn').style.display = 'none';
+      document.getElementById('apCat').value = '';
+      document.getElementById('apName').value = '';
+      document.getElementById('apDesc').value = '';
+      document.getElementById('apPrice').value = '';
+      apBadgeTypeSelect.value = '';
+      document.getElementById('apDiscountPercent').value = '';
+      document.getElementById('apCustomTag').value = '';
+      apDiscountWrap.style.display = 'none';
+      apCustomTagWrap.style.display = 'none';
+      apImageInput.value = '';
+      apImagePreviewWrap.innerHTML = '';
+      setButtonBusy(apAddBtn, false, 'Kaydediliyor...', 'Ürünü Ekle');
     }
+    function startEditProduct(p){
+      apEditingId = p.id;
+      document.getElementById('apFormTitle').textContent = 'Ürünü Düzenle: ' + p.name;
+      document.getElementById('apCancelEditBtn').style.display = 'block';
+      document.getElementById('apCat').value = p.cat || '';
+      document.getElementById('apName').value = p.name || '';
+      document.getElementById('apDesc').value = p.desc || '';
+      document.getElementById('apPrice').value = p.price || '';
+      apBadgeTypeSelect.value = p.badgeType || '';
+      apDiscountWrap.style.display = p.badgeType === 'discount' ? 'block' : 'none';
+      apCustomTagWrap.style.display = p.badgeType === 'custom' ? 'block' : 'none';
+      document.getElementById('apDiscountPercent').value = p.discountPercent || '';
+      document.getElementById('apCustomTag').value = p.customTag || '';
+      apImageInput.value = '';
+      const images = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+      apImagePreviewWrap.innerHTML = images.map(u => '<img src="' + u + '">').join('');
+      switchApTab('products');
+    }
+    document.getElementById('apCancelEditBtn').addEventListener('click', resetProductForm);
 
     // ---- Sitede önceden var olan (statik) ilanları silme sistemi ----
     const STATIC_PRODUCTS = [
@@ -2473,10 +2614,10 @@
       updateCategoryCounts();
       applyProductFilter();
     }
-    function renderAdminAddedList(){
-      const list = loadAdminProducts();
+    function renderAdminAddedList(list){
+      list = list || apProductsCache;
       const wrap = document.getElementById('apAddedList');
-      if (list.length === 0){
+      if (!list || list.length === 0){
         wrap.innerHTML = '<p style="font-size:12.5px; color:var(--muted-2);">Henüz panelden ürün eklenmedi.</p>';
         return;
       }
@@ -2488,20 +2629,33 @@
         else if (p.badgeType === 'discount' && p.discountPercent) badgeNote = ' · %' + p.discountPercent + ' İndirim';
         else if (p.badgeType === 'new') badgeNote = ' · Yeni';
         else if (p.badgeType === 'custom' && p.customTag) badgeNote = ' · ' + p.customTag;
-        return '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line-soft); font-size:13px;">' +
-          '<span>' + p.name + ' — ' + formatTL(p.price) + photoNote + badgeNote + '</span>' +
-          '<button type="button" data-remove-id="' + p.id + '" style="background:none;border:none;color:var(--muted-2);text-decoration:underline;cursor:pointer;font-size:12px;font-family:inherit;">Sil</button>' +
+        const thumb = (p.images && p.images[0]) ? p.images[0] : (p.image || '');
+        return '<div class="ap-prod-row">' +
+          '<div class="ap-prod-thumb">' + (thumb ? '<img src="' + thumb + '">' : '') + '</div>' +
+          '<div class="ap-prod-info"><strong>' + escapeHtml(p.name) + '</strong><span>' + p.cat + ' · ' + formatTL(p.price) + photoNote + badgeNote + '</span></div>' +
+          '<div class="ap-prod-actions">' +
+            '<button type="button" class="ap-edit-link" data-edit-id="' + p.id + '">Düzenle</button>' +
+            '<button type="button" class="ap-del-link" data-remove-id="' + p.id + '">Sil</button>' +
+          '</div>' +
         '</div>';
       }).join('');
+      wrap.querySelectorAll('button[data-edit-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const p = apProductsCache.find(x => String(x.id) === btn.dataset.editId);
+          if (p) startEditProduct(p);
+        });
+      });
       wrap.querySelectorAll('button[data-remove-id]').forEach(btn => {
         btn.addEventListener('click', () => {
+          if (!confirm('Bu ürünü silmek istediğine emin misin?')) return;
           const id = btn.dataset.removeId;
-          const remaining = loadAdminProducts().filter(p => String(p.id) !== id);
-          saveAdminProducts(remaining);
-          const card = document.querySelector('.prod-card[data-admin-id="' + id + '"]');
-          if (card) card.remove();
-          renderAdminAddedList();
-          updateCategoryCounts();
+          btn.disabled = true;
+          db.collection('products').doc(id).delete().then(() => {
+            if (apEditingId === id) resetProductForm();
+          }).catch(err => {
+            alert('Ürün silinemedi: ' + err.message);
+            btn.disabled = false;
+          });
         });
       });
     }
@@ -2581,39 +2735,100 @@
         return;
       }
 
-      function finishAdd(imageUrls){
-        const product = { id: Date.now(), cat, name, desc, price, badgeType, discountPercent, customTag, images: imageUrls || [] };
-        const list = loadAdminProducts();
-        list.push(product);
-        saveAdminProducts(list);
-        renderProductCard(product);
-        renderAdminAddedList();
-        document.getElementById('apCat').value = '';
-        document.getElementById('apName').value = '';
-        document.getElementById('apDesc').value = '';
-        document.getElementById('apPrice').value = '';
-        apBadgeTypeSelect.value = '';
-        document.getElementById('apDiscountPercent').value = '';
-        document.getElementById('apCustomTag').value = '';
-        apDiscountWrap.style.display = 'none';
-        apCustomTagWrap.style.display = 'none';
-        apImageInput.value = '';
-        apImagePreviewWrap.innerHTML = '';
-        setButtonBusy(apAddBtn, false, 'Yükleniyor...', 'Ürünü Ekle');
+      function finishSave(imageUrls){
+        const data = { cat, name, desc, price, badgeType, discountPercent, customTag };
+        if (apEditingId){
+          if (imageUrls !== null) data.images = imageUrls;
+          db.collection('products').doc(apEditingId).update(data).then(() => {
+            resetProductForm();
+          }).catch(err => {
+            alert('Ürün güncellenemedi: ' + err.message);
+            setButtonBusy(apAddBtn, false, 'Kaydediliyor...', 'Ürünü Ekle');
+          });
+        } else {
+          data.images = imageUrls || [];
+          data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          db.collection('products').add(data).then(() => {
+            resetProductForm();
+          }).catch(err => {
+            alert('Ürün eklenemedi: ' + err.message);
+            setButtonBusy(apAddBtn, false, 'Yükleniyor...', 'Ürünü Ekle');
+          });
+        }
       }
 
       if (files.length){
-        setButtonBusy(apAddBtn, true, 'Yükleniyor...', 'Ürünü Ekle');
-        Promise.all(files.map(uploadToImgbb)).then(finishAdd).catch(err => {
-          setButtonBusy(apAddBtn, false, 'Yükleniyor...', 'Ürünü Ekle');
+        setButtonBusy(apAddBtn, true, apEditingId ? 'Kaydediliyor...' : 'Yükleniyor...', 'Ürünü Ekle');
+        Promise.all(files.map(uploadToImgbb)).then(finishSave).catch(err => {
+          setButtonBusy(apAddBtn, false, apEditingId ? 'Kaydediliyor...' : 'Yükleniyor...', 'Ürünü Ekle');
           alert('Fotoğraflar yüklenemedi: ' + err.message);
         });
       } else {
-        finishAdd([]);
+        setButtonBusy(apAddBtn, true, apEditingId ? 'Kaydediliyor...' : 'Yükleniyor...', 'Ürünü Ekle');
+        finishSave(apEditingId ? null : []);
       }
     });
-    // Sayfa yüklendiğinde daha önce panelden eklenmiş ürünleri göster
-    loadAdminProducts().forEach(renderProductCard);
+    // Sayfa yüklendiğinde tüm ürünleri Firestore'dan gerçek zamanlı olarak göster
+    subscribeProducts();
+
+    // ---- İletişim mesajları: Firestore'da saklanır, yönetim panelinde gerçek zamanlı listelenir ----
+    function subscribeAdminMessages(){
+      db.collection('contactMessages').orderBy('createdAt', 'desc').onSnapshot(snap => {
+        const msgs = [];
+        snap.forEach(doc => msgs.push(Object.assign({ id: doc.id }, doc.data())));
+        renderAdminMessagesList(msgs);
+      }, err => {
+        document.getElementById('apMessagesList').innerHTML =
+          '<p style="font-size:12.5px; color:#E0736B;">Mesajlar yüklenemedi: ' + err.message + '</p>';
+      });
+    }
+    function renderAdminMessagesList(msgs){
+      const wrap = document.getElementById('apMessagesList');
+      const unreadCount = msgs.filter(m => m.status !== 'read').length;
+      const statMsg = document.getElementById('apStatMessages');
+      if (statMsg) statMsg.textContent = unreadCount;
+      const badge = document.getElementById('apMsgBadge');
+      badge.textContent = unreadCount;
+      badge.style.display = unreadCount > 0 ? 'inline-flex' : 'none';
+      if (msgs.length === 0){
+        wrap.innerHTML = '<p style="font-size:12.5px; color:var(--muted-2);">Henüz mesaj yok.</p>';
+        return;
+      }
+      wrap.innerHTML = msgs.map(m => {
+        const unread = m.status !== 'read';
+        const dateStr = (m.createdAt && m.createdAt.toDate) ? m.createdAt.toDate().toLocaleString('tr-TR') : '';
+        return '<div class="ap-msg-row' + (unread ? ' unread' : '') + '">' +
+          '<div class="ap-msg-top"><div>' + (unread ? '<span class="ap-unread-dot"></span>' : '') + '<strong>' + escapeHtml(m.name) + '</strong></div>' +
+          '<span class="ap-msg-meta">' + dateStr + '</span></div>' +
+          '<div class="ap-msg-meta">' + escapeHtml(m.email) + (m.phone ? ' · ' + escapeHtml(m.phone) : '') + '</div>' +
+          '<div class="ap-msg-text">' + escapeHtml(m.message) + '</div>' +
+          '<div class="ap-msg-actions">' +
+            '<a href="mailto:' + encodeURIComponent(m.email) + '">Yanıtla</a>' +
+            (unread ? '<button type="button" class="ap-read-btn" data-read-id="' + m.id + '">Okundu İşaretle</button>' : '') +
+            '<button type="button" class="ap-del-btn" data-del-msg-id="' + m.id + '">Sil</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      wrap.querySelectorAll('[data-read-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          btn.disabled = true;
+          db.collection('contactMessages').doc(btn.dataset.readId).update({ status: 'read' }).catch(err => {
+            alert('İşaretlenemedi: ' + err.message);
+            btn.disabled = false;
+          });
+        });
+      });
+      wrap.querySelectorAll('[data-del-msg-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!confirm('Bu mesajı silmek istediğine emin misin?')) return;
+          btn.disabled = true;
+          db.collection('contactMessages').doc(btn.dataset.delMsgId).delete().catch(err => {
+            alert('Silinemedi: ' + err.message);
+            btn.disabled = false;
+          });
+        });
+      });
+    }
 
     // ---- Yönetim: bakiye yükleme taleplerini onaylama/reddetme (gerçek zamanlı) ----
     function subscribeAdminTopupRequests(){
@@ -2629,6 +2844,9 @@
 
     function renderAdminTopupList(requests){
       const wrap = document.getElementById('apTopupList');
+      const pendingCount = requests.filter(r => r.status === 'pending').length;
+      const statTopups = document.getElementById('apStatTopups');
+      if (statTopups) statTopups.textContent = pendingCount;
       if (requests.length === 0){
         wrap.innerHTML = '<p style="font-size:12.5px; color:var(--muted-2);">Henüz bakiye yükleme talebi yok.</p>';
         return;
@@ -2689,13 +2907,35 @@
       });
     }
 
-    // ---- İletişim formu ----
+    // ---- İletişim formu: mesaj Firestore'a kaydedilir, yönetim panelinde görünür ----
     const contactForm = document.getElementById('contactForm');
     const formSuccess = document.getElementById('formSuccess');
     contactForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      formSuccess.classList.add('show');
-      contactForm.reset();
+      formSuccess.classList.remove('show');
+      setFieldError('contactError', '');
+      const name = document.getElementById('contactName').value.trim();
+      const email = document.getElementById('contactEmail').value.trim();
+      const phone = document.getElementById('contactPhone').value.trim();
+      const message = document.getElementById('contactMessage').value.trim();
+      if (!name || !email || !message){
+        setFieldError('contactError', 'Lütfen ad soyad, e-posta ve mesaj alanlarını doldur.');
+        return;
+      }
+      const submitBtn = contactForm.querySelector('button[type="submit"]');
+      setButtonBusy(submitBtn, true, 'Gönderiliyor...', 'Mesajı Gönder');
+      db.collection('contactMessages').add({
+        name, email, phone, message,
+        status: 'unread',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        formSuccess.classList.add('show');
+        contactForm.reset();
+      }).catch(err => {
+        setFieldError('contactError', 'Mesaj gönderilemedi: ' + err.message);
+      }).finally(() => {
+        setButtonBusy(submitBtn, false, 'Gönderiliyor...', 'Mesajı Gönder');
+      });
     });
   </script>
 </body>
